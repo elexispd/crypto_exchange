@@ -9,6 +9,7 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Laravel\Sanctum\HasApiTokens;
+use App\Models\KycDocument;
 
 
 class User extends Authenticatable
@@ -46,4 +47,10 @@ class User extends Authenticatable
         'password' => 'hashed',
 
     ];
+
+    public function kycDocument()
+    {
+        return $this->hasMany(KycDocument::class);
+    }
+
 }

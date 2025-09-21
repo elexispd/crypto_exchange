@@ -12,7 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('kyc_documents', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
+            $table->foreignUuid('user_id')->constrained()->onDelete('cascade');
+            $table->string('document_type');
+            $table->string('document_number')->nullable();
+            $table->string('front_image')->nullable(); //will be used as the document photo/file
+            $table->string('back_image')->nullable();
+            $table->string('status')->default('pending');
+            $table->text('rejection_reason')->nullable();
+            $table->timestamp('verified_at')->nullable();
             $table->timestamps();
         });
     }
