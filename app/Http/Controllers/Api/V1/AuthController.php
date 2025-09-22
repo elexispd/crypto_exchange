@@ -20,25 +20,10 @@ class AuthController extends Controller
 
         $data = $request->validated();
 
-        // Generate random phrase (3–5 words)
-        $words = [
-            'apple', 'river', 'stone', 'sky', 'cloud', 'forest', 'light', 'star', 'dream', 'fire',
-            'city', 'united', 'life', 'water', 'earth', 'wind', 'mountain', 'tree', 'sun', 'moon',
-            'ocean', 'bird', 'flower', 'grass', 'sand', 'storm', 'peace', 'hope', 'energy', 'sound',
-            'gate', 'path', 'bridge', 'circle', 'echo', 'vision', 'soul', 'flame', 'night', 'day',
-            'wolf', 'lion', 'tiger', 'eagle', 'dragon', 'shadow', 'rain', 'snow', 'storm', 'wave',
-            'stone', 'iron', 'silver', 'gold', 'crystal', 'dreamer', 'wander', 'hunter', 'seeker', 'keeper'
-        ];
-
-        $randomWords = collect($words)->random(11)->values()->all();
-        $randomPhraseString = implode(' ', $randomWords);
-        $secretPhraseHash = Hash::make($randomPhraseString);
-
         $user = User::create([
             'name'               => $data['name'],
             'email'              => $data['email'],
             'password'           => Hash::make($data['password']),
-            'secret_phrase_hash' => $secretPhraseHash,
             'country'            => $data['country'],
             'state'              => $data['state'],
             'pin'                => $data['pin'],
@@ -59,8 +44,7 @@ class AuthController extends Controller
                 'phone'         => $user->phone,
                 'kyc_status'    => $user->kyc_status,
                 'is_Admin'      => $user->is_admin ? true : false,
-                'created_at'    => $user->created_at,
-                'secret_phrase' => $randomWords,
+                'created_at'    => $user->created_at
             ],
         ], 201);
     }

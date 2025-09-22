@@ -21,7 +21,6 @@ return new class extends Migration
             $table->char('pin', 4);
             $table->string('phone')->nullable()->unique();
             $table->string('password');
-            $table->string('secret_phrase_hash')->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->boolean('is_admin')->default(false);
             $table->enum('kyc_status', ['pending','approved','rejected'])->default('pending');

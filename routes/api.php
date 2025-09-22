@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\CryptoApiController;
 use App\Http\Controllers\Api\V1\KycDocumentController;
 
 Route::prefix('v1')->group(function () {
@@ -21,6 +22,11 @@ Route::prefix('v1')->group(function () {
 
         Route::apiResource('kyc', KycDocumentController::class)->only(['index', 'store', 'show']);
         Route::post('/kyc/{kyc}', [KycDocumentController::class, 'update'])->name('kyc.update');
+
+        Route::get('/crypto/trending', [CryptoApiController::class, 'getTrending']);
+        Route::get('/crypto/portfolio', [CryptoApiController::class, 'getPortfolio']);
+        Route::get('/crypto/all', [CryptoApiController::class, 'getAllData']);
+        Route::get('/crypto/coin/{coinId}', [CryptoApiController::class, 'getCoinData']);
 
     });
 });
