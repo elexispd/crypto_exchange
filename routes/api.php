@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CryptoApiController;
 use App\Http\Controllers\Api\V1\KycDocumentController;
+use App\Http\Controllers\Api\V1\WalletController;
 
 Route::prefix('v1')->group(function () {
     // Public
@@ -23,10 +24,11 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('kyc', KycDocumentController::class)->only(['index', 'store', 'show']);
         Route::post('/kyc/{kyc}', [KycDocumentController::class, 'update'])->name('kyc.update');
 
-        Route::get('/crypto/trending', [CryptoApiController::class, 'getTrending']);
-        Route::get('/crypto/portfolio', [CryptoApiController::class, 'getPortfolio']);
-        Route::get('/crypto/all', [CryptoApiController::class, 'getAllData']);
-        Route::get('/crypto/coin/{coinId}', [CryptoApiController::class, 'getCoinData']);
+        Route::get('/wallet/getSecretPhrase', [WalletController::class,  'getPhrase'] );
+        Route::apiResource('wallet', WalletController::class)->only(['store', 'show']);
+
+        Route::get('/crypto/prices', [CryptoApiController::class, 'prices']);
+        Route::get('/crypto/price/{id}', [CryptoApiController::class, 'price']);
 
     });
 });

@@ -11,186 +11,49 @@ use App\Services\CoinGeckoService;
 
 class CryptoApiController extends Controller
 {
-    protected $coinGeckoService;
 
-    public function __construct(CoinGeckoService $coinGeckoService)
+     protected $coinGecko;
+
+    public function __construct(CoinGeckoService $coinGecko)
     {
-        $this->coinGeckoService = $coinGeckoService;
+        $this->coinGecko = $coinGecko;
     }
 
-    /**
-     * Get trending cryptocurrencies
-     */
-    public function getTrending()
+    // Get multiple prices
+    public function prices()
     {
-        try {
-            $trendingData = $this->coinGeckoService->getTrending();
+        $ids = ['bitcoin', 'ethereum', 'ripple', 'solana'];
+        $currencies = ['usd'];
 
-            // Format the data
-            $formattedData = [];
-            foreach ($trendingData['coins'] as $coin) {
-                $coinData = $coin['item']['data'];
-                $symbol = strtoupper($coin['item']['symbol']);
+        $prices = $this->coinGecko->getPrices($ids, $currencies);
 
-                $formattedData[$symbol] = [
-                    'name' => $coin['item']['name'],
-                    'symbol' => $symbol,
-                    'price' => number_format($coinData['price'], 2),
-                    'change' => number_format($coinData['price_change_percentage_24h']['usd'], 2)
-                ];
-            }
+        $formatted = [
+            'Bitcoin'  => ['symbol' => 'BTC', 'price' => $prices['bitcoin']['usd'] ?? null],
+            'Ethereum' => ['symbol' => 'ETH', 'price' => $prices['ethereum']['usd'] ?? null],
+            'Ripple'   => ['symbol' => 'XRP', 'price' => $prices['ripple']['usd'] ?? null],
+            'Solana'   => ['symbol' => 'SOL', 'price' => $prices['solana']['usd'] ?? null],
+        ];
 
-            return response()->json([
-                'success' => true,
-                'data' => $formattedData
-            ]);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage()
-            ], 500);
-        }
+        return response()->json($formatted);
     }
 
-    /**
-     * Get portfolio data using the service
-     */
-    public function getPortfolio()
+    // Get individual price
+    public function price($id)
     {
-        try {
-            // Define the coins in our portfolio
-            $portfolioCoins = ['tether', 'bitcoin', 'ethereum'];
+        $map = [
+            'bitcoin'  => 'BTC',
+            'ethereum' => 'ETH',
+            'ripple'   => 'XRP',
+            'solana'   => 'SOL',
+        ];
 
-            // Fetch current prices and changes using the service
-            $priceData = $this->coinGeckoService->getPrices($portfolioCoins);
+        $price = $this->coinGecko->getPrice($id, 'usd');
 
-            // Format the portfolio data
-            $formattedData = [];
-
-            // USDT BNB Smart Chain
-            $formattedData[] = [
-                'name' => 'USDT BNB Smart Chain',
-                'balance' => '0.00',
-                'value' => number_format($priceData['tether']['usd'] * 0.00, 2),
-                'change' => number_format($priceData['tether']['usd_24h_change'] ?? 0, 2) . '%'
-            ];
-
-            // BTC Bitcoin
-            $btcBalance = 0.000008;
-            $formattedData[] = [
-                'name' => 'BTC Bitcoin',
-                'balance' => number_format($btcBalance, 8),
-                'value' => number_format($priceData['bitcoin']['usd'] * $btcBalance, 2),
-                'change' => number_format($priceData['bitcoin']['usd_24h_change'] ?? 0, 2) . '%'
-            ];
-
-            // ETH Ethereum
-            $ethBalance = 0.000008;
-            $formattedData[] = [
-                'name' => 'ETH Ethereum',
-                'balance' => number_format($ethBalance, 8),
-                'value' => number_format($priceData['ethereum']['usd'] * $ethBalance, 2),
-                'change' => number_format($priceData['ethereum']['usd_24h_change'] ?? 0, 2) . '%'
-            ];
-
-            return response()->json([
-                'success' => true,
-                'data' => $formattedData
-            ]);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage()
-            ], 500);
-        }
+        return response()->json([
+            'name'   => ucfirst($id),
+            'symbol' => $map[$id] ?? strtoupper($id),
+            'price'  => $price[$id]['usd'] ?? null,
+        ]);
     }
 
-    /**
-     * Get all data (trending + portfolio)
-     */
-    public function getAllData()
-    {
-        try {
-            // Get trending data using service
-            $trendingData = $this->coinGeckoService->getTrending();
-
-            // Get portfolio prices using service
-            $portfolioCoins = ['tether', 'bitcoin', 'ethereum'];
-            $priceData = $this->coinGeckoService->getPrices($portfolioCoins);
-
-            // Format trending data
-            $formattedTrending = [];
-            foreach ($trendingData['coins'] as $coin) {
-                $coinData = $coin['item']['data'];
-                $symbol = strtoupper($coin['item']['symbol']);
-
-                $formattedTrending[$symbol] = [
-                    'name' => $coin['item']['name'],
-                    'symbol' => $symbol,
-                    'price' => number_format($coinData['price'], 2),
-                    'change' => number_format($coinData['price_change_percentage_24h']['usd'], 2)
-                ];
-            }
-
-            // Format portfolio data
-            $btcBalance = 0.000008;
-            $ethBalance = 0.000008;
-
-            $formattedPortfolio = [
-                [
-                    'name' => 'USDT BNB Smart Chain',
-                    'balance' => '0.00',
-                    'value' => number_format($priceData['tether']['usd'] * 0.00, 2),
-                    'change' => number_format($priceData['tether']['usd_24h_change'] ?? 0, 2) . '%'
-                ],
-                [
-                    'name' => 'BTC Bitcoin',
-                    'balance' => number_format($btcBalance, 8),
-                    'value' => number_format($priceData['bitcoin']['usd'] * $btcBalance, 2),
-                    'change' => number_format($priceData['bitcoin']['usd_24h_change'] ?? 0, 2) . '%'
-                ],
-                [
-                    'name' => 'ETH Ethereum',
-                    'balance' => number_format($ethBalance, 8),
-                    'value' => number_format($priceData['ethereum']['usd'] * $ethBalance, 2),
-                    'change' => number_format($priceData['ethereum']['usd_24h_change'] ?? 0, 2) . '%'
-                ]
-            ];
-
-            return response()->json([
-                'success' => true,
-                'trending' => $formattedTrending,
-                'portfolio' => $formattedPortfolio
-            ]);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage()
-            ], 500);
-        }
-    }
-
-    /**
-     * Get specific coin data using service
-     */
-    public function getCoinData($coinId)
-    {
-        try {
-            $data = $this->coinGeckoService->getCoin($coinId);
-
-            return response()->json([
-                'success' => true,
-                'data' => $data
-            ]);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage()
-            ], 500);
-        }
-    }
 }

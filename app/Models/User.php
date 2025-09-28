@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Laravel\Sanctum\HasApiTokens;
 use App\Models\KycDocument;
+use App\Models\Wallet;
 
 
 class User extends Authenticatable
@@ -51,6 +52,10 @@ class User extends Authenticatable
     public function kycDocument()
     {
         return $this->hasMany(KycDocument::class);
+    }
+
+    public function wallet() {
+        return $this->hasOne(Wallet::class);
     }
 
 }
