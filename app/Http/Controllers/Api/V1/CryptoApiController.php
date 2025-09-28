@@ -12,7 +12,7 @@ use App\Services\CoinGeckoService;
 class CryptoApiController extends Controller
 {
 
-     protected $coinGecko;
+    protected $coinGecko;
 
     public function __construct(CoinGeckoService $coinGecko)
     {
@@ -56,4 +56,23 @@ class CryptoApiController extends Controller
         ]);
     }
 
+    public function market()
+    {
+        $ids = ['bitcoin', 'ethereum', 'ripple', 'solana'];
+
+        $data = $this->coinGecko->getSelectedMarketData($ids, 'usd');
+
+        $formatted = collect($data)->mapWithKeys(function ($coin) {
+            return [
+                ucfirst($coin['id']) => [
+                    'symbol'      => strtoupper($coin['symbol']),
+                    'price'       => $coin['current_price'],
+                    'change_24h'  => $coin['price_change_percentage_24h'],
+                    'market_cap'  => $coin['market_cap'],
+                ]
+            ];
+        });
+
+        return response()->json($formatted);
+    }
 }

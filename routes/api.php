@@ -29,6 +29,8 @@ Route::prefix('v1')->group(function () {
 
         Route::get('/crypto/prices', [CryptoApiController::class, 'prices']);
         Route::get('/crypto/price/{id}', [CryptoApiController::class, 'price']);
+        Route::get('/crypto/market', [CryptoApiController::class, 'market']);
+
 
     });
 });

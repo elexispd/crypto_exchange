@@ -45,4 +45,36 @@ class CoinGeckoService
             return $response->json();
         });
     }
+
+    public function getSelectedMarketData(array $ids, string $currency = 'usd', int $ttl = 600)
+    {
+        $cacheKey = 'market_data_' . md5(implode(',', $ids) . $currency);
+
+        return Cache::remember($cacheKey, $ttl, function () use ($ids, $currency) {
+            $response = Http::get($this->baseUrl . 'coins/markets', [
+                'vs_currency' => $currency,
+                'ids' => implode(',', $ids),  // only fetch selected coins
+                'order' => 'market_cap_desc',
+                'sparkline' => 'false'
+            ]);
+
+            return $response->json();
+        });
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }
