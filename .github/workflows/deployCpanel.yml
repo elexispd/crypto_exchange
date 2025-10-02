@@ -3,7 +3,7 @@ name: Deploy Laravel to Namecheap
 on:
   push:
     branches:
-      - master   # deploy only when pushing to main branch
+      - master   # deploy only when pushing to master branch
 
 jobs:
   deploy:
@@ -23,15 +23,16 @@ jobs:
           server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          port: ${{ secrets.FTP_PORT }}
+          port: 21
           server-dir: /app/       # target on server
-          local-dir: ./           # everything
+          local-dir: ./
           exclude: |
             public/**
             vendor/**
             .github/**
             .git/**
             node_modules/**
+          log-level: verbose
 
       # Upload public files to public_html
       - name: Upload Public Files
@@ -40,6 +41,7 @@ jobs:
           server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          port: ${{ secrets.FTP_PORT }}
+          port: 21
           server-dir: /public_html/
           local-dir: ./public/
+          log-level: verbose
