@@ -35,9 +35,6 @@ Route::prefix('v1')->group(function () {
         Route::get('/crypto/market', [CryptoApiController::class, 'market']);
         Route::get('/crypto/coins', [CryptoApiController::class, 'coins']);
 
-        // Route::post('/deposits', [DepositController::class, 'store']);
-        // Route::get('/deposits', [DepositController::class, 'index']);
-        // Route::get('/deposits/{id}', [DepositController::class, 'show']);
 
         Route::get('/transactions', [TransactionController::class, 'index']);
         Route::post('/transactions/deposit', [TransactionController::class, 'deposit']);
