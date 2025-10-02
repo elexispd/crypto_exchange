@@ -1,0 +1,45 @@
+name: Deploy Laravel to Namecheap
+
+on:
+  push:
+    branches:
+      - master   # deploy only when pushing to main branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Install Composer dependencies
+        run: composer install --no-dev --optimize-autoloader
+
+      # Upload Laravel core (app folder) to server
+      - name: Upload Laravel Core
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: ${{ secrets.FTP_PORT }}
+          server-dir: /app/       # target on server
+          local-dir: ./           # everything
+          exclude: |
+            public/**
+            vendor/**
+            .github/**
+            .git/**
+            node_modules/**
+
+      # Upload public files to public_html
+      - name: Upload Public Files
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: ${{ secrets.FTP_PORT }}
+          server-dir: /public_html/
+          local-dir: ./public/
