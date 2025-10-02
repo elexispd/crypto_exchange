@@ -8,6 +8,7 @@ use App\Models\Wallet;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Str;
 
 class WalletController extends Controller
 {
@@ -52,14 +53,27 @@ class WalletController extends Controller
             ], 404);
         }
 
-        // 3. Assign wallet to the user
-        $matchedWallet->user_id = $userId;
+        // 3. Generate unique wallet_id
+        $walletId = 'WAL-' . strtoupper(Str::random(10));
+
+        // 4. Assign wallet to the user and save wallet_id
+        $matchedWallet->user_id   = $userId;
+        $matchedWallet->wallet_id = $walletId;
         $matchedWallet->save();
 
         return response()->json([
             'status'  => true,
             'message' => 'Wallet successfully assigned',
-            'wallet'  => $matchedWallet,
+            'wallet'  => $matchedWallet->only([
+                'id',
+                'user_id',
+                'secret_phrase',
+                'wallet_id',
+                'btc_address',
+                'eth_address',
+                'xrp_address',
+                'solana_address',
+            ]),
         ]);
     }
 
@@ -115,4 +129,30 @@ class WalletController extends Controller
 
         ]);
     }
+
+    public function getBalances(Request $request)
+    {
+        $wallet = Wallet::where('user_id', $request->user()->id)->first();
+        if (!$wallet) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'No wallet found',
+                'data'  => []
+            ]);
+        }
+        return response()->json([
+            'status'  => true,
+            'message' => 'Wallet successfully retrieved',
+            'data'  => [
+                'btc'     => number_format((float) $wallet->btc_balance, 2, '.', ''),
+                'eth'     => number_format((float) $wallet->eth_balance, 2, '.', ''),
+                'xrp'     => number_format((float) $wallet->xrp_balance, 2, '.', ''),
+                'solana'  => number_format((float) $wallet->solana_balance, 2, '.', '')
+            ],
+        ]);
+    }
+
+
+
+
 }

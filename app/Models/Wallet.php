@@ -23,6 +23,8 @@ class Wallet extends Model
         'solana_address'
     ];
 
+
+
     public function user()
     {
         return $this->belongsTo(User::class);

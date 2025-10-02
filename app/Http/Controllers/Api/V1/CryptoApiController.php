@@ -34,7 +34,11 @@ class CryptoApiController extends Controller
             'Solana'   => ['symbol' => 'SOL', 'price' => $prices['solana']['usd'] ?? null],
         ];
 
-        return response()->json($formatted);
+        return response()->json([
+            'status'  => true,
+            'message' => 'Prices successfully retrieved',
+            'data'  => $formatted,
+        ]);
     }
 
     // Get individual price
@@ -50,9 +54,13 @@ class CryptoApiController extends Controller
         $price = $this->coinGecko->getPrice($id, 'usd');
 
         return response()->json([
-            'name'   => ucfirst($id),
-            'symbol' => $map[$id] ?? strtoupper($id),
-            'price'  => $price[$id]['usd'] ?? null,
+            'status'  => true,
+            'message' => 'Price successfully retrieved',
+            'data'  => [
+                'name'   => ucfirst($id),
+                'symbol' => $map[$id] ?? strtoupper($id),
+                'price'  => $price[$id]['usd'] ?? null,
+            ],
         ]);
     }
 
@@ -73,6 +81,38 @@ class CryptoApiController extends Controller
             ];
         });
 
-        return response()->json($formatted);
+        return response()->json([
+            'status'  => true,
+            'message' => 'Market successfully retrieved',
+            'data'  => $formatted,
+        ]);
     }
+
+    // endpoint to get the four coins and it's symble
+    public function coins()
+    {
+        $ids = ['bitcoin', 'ethereum', 'ripple', 'solana'];
+
+        $formatted = [
+            'Bitcoin'  => ['symbol' => 'BTC'],
+            'Ethereum' => ['symbol' => 'ETH'],
+            'Ripple'   => ['symbol' => 'XRP'],
+            'Solana'   => ['symbol' => 'SOL'],
+        ];
+
+        return response()->json([
+            'status'  => true,
+            'message' => 'Coins successfully retrieved',
+            'data'  => $formatted,
+        ]);
+    }
+
+
+
+
+
+
+
 }
+
+
