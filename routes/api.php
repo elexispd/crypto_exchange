@@ -42,7 +42,11 @@ Route::prefix('v1')->group(function () {
         Route::get('/transactions', [TransactionController::class, 'index']);
         Route::post('/transactions/deposit', [TransactionController::class, 'deposit']);
         Route::post('/transactions/withdraw', [TransactionController::class, 'withdraw']);
+
         Route::post('/transactions/swap', [TransactionController::class, 'swap']);
+        Route::get('/transactions/preview-swap', [TransactionController::class, 'previewSwap']);
+
+
         Route::get('/transactions/deposits/{transaction}', [TransactionController::class, 'show']);
         Route::get('/transactions/withdrawals/{transaction}', [TransactionController::class, 'show']);
         Route::get('/transactions/swaps/{transaction}', [TransactionController::class, 'show']);

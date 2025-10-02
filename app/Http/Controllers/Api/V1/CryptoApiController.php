@@ -14,10 +14,12 @@ class CryptoApiController extends Controller
 
     protected $coinGecko;
 
+
     public function __construct(CoinGeckoService $coinGecko)
     {
         $this->coinGecko = $coinGecko;
     }
+
 
     // Get multiple prices
     public function prices()
@@ -106,13 +108,4 @@ class CryptoApiController extends Controller
             'data'  => $formatted,
         ]);
     }
-
-
-
-
-
-
-
 }
-
-

@@ -12,6 +12,24 @@ class CoinGeckoService
     {
         $this->baseUrl = config('services.coingecko.base_url', 'https://api.coingecko.com/api/v3/');
     }
+
+    protected $symbolMap = [
+        'btc'    => 'bitcoin',
+        'eth'    => 'ethereum',
+        'xrp'    => 'ripple',
+        'sol'    => 'solana',
+        'gold'   => 'tether-gold',     // example
+        'sp500'  => 's-p-500',         // if you track synthetic assets, you may need another API
+        'nasdaq' => 'nasdaq-100',      // same here
+        'oil'    => 'crude-oil',       // may not exist in CoinGecko
+    ];
+
+    public function mapSymbolToId(string $symbol): ?string
+    {
+        $symbol = strtolower($symbol);
+        return $this->symbolMap[$symbol] ?? null;
+    }
+
     /**
      * Get multiple crypto prices (cached)
      */

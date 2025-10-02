@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 
 use App\Models\Transaction;
 use App\Models\Wallet;
+use App\Services\CoinGeckoService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class TransactionController extends Controller
 {
@@ -29,10 +31,10 @@ class TransactionController extends Controller
             'status' => true,
             'transactions' => $transactions,
         ]);
-
     }
 
-    public function show(Request $request, Transaction $transaction) {
+    public function show(Request $request, Transaction $transaction)
+    {
         return response()->json([
             'status' => true,
             'transaction' => $transaction,
@@ -111,7 +113,7 @@ class TransactionController extends Controller
     }
 
     // Create a swap transaction
-    public function swap(Request $request)
+    public function swap(Request $request, CoinGeckoService $coinGecko)
     {
         $request->merge([
             'from_currency' => strtolower($request->from_currency),
@@ -123,7 +125,6 @@ class TransactionController extends Controller
             'from_currency' => 'required|string|in:btc,eth,xrp,sol',
             'to_currency'   => 'required|string|in:btc,eth,xrp,sol|different:from_currency',
             'from_amount'   => 'required|numeric|min:0.00000001',
-            'to_amount'     => 'required|numeric|min:0.00000001',
         ]);
 
         $wallet = Wallet::where('id', $request->wallet_id)
@@ -134,6 +135,39 @@ class TransactionController extends Controller
             return response()->json(['status' => false, 'message' => 'Invalid wallet'], 403);
         }
 
+        // Check wallet balance
+        $fromBalance = $wallet->getBalance($request->from_currency);
+        if ($fromBalance < $request->from_amount) {
+            return response()->json(['status' => false, 'message' => 'Insufficient balance'], 400);
+        }
+
+        // ✅ Map to CoinGecko IDs
+        $fromId = $coinGecko->mapSymbolToId($request->from_currency);
+        $toId   = $coinGecko->mapSymbolToId($request->to_currency);
+
+        if (! $fromId || ! $toId) {
+            return response()->json(['status' => false, 'message' => 'Unsupported currency'], 400);
+        }
+
+        // ✅ Fetch prices with mapped IDs
+        $prices = $coinGecko->getPrices([$fromId, $toId], ['usd'], 60);
+
+        if (!isset($prices[$fromId]['usd']) || !isset($prices[$toId]['usd'])) {
+            return response()->json(['status' => false, 'message' => 'Price fetch failed'], 500);
+        }
+
+        $fromPriceUsd = $prices[$fromId]['usd'];
+        $toPriceUsd   = $prices[$toId]['usd'];
+
+        // Calculate conversion
+        $toAmount = ($request->from_amount * $fromPriceUsd) / $toPriceUsd;
+
+        // ✅ Update balances (wrap in DB transaction for safety)
+        DB::transaction(function () use ($wallet, $request, $toAmount) {
+            $wallet->decrementBalance($request->from_currency, $request->from_amount);
+            $wallet->incrementBalance($request->to_currency, $toAmount);
+        });
+
         $transaction = Transaction::create([
             'user_id'       => $request->user()->id,
             'wallet_id'     => $wallet->id,
@@ -141,17 +175,68 @@ class TransactionController extends Controller
             'from_currency' => strtoupper($request->from_currency),
             'to_currency'   => strtoupper($request->to_currency),
             'from_amount'   => $request->from_amount,
-            'to_amount'     => $request->to_amount,
-            'status'        => 'pending',
+            'to_amount'     => $toAmount,
+            'status'        => 'completed',
         ]);
 
         return response()->json([
             'status' => true,
-            'message' => 'Swap transaction created',
+            'message' => 'Swap successful',
             'transaction' => $transaction,
         ]);
     }
 
 
+    public function previewSwap(Request $request, CoinGeckoService $coinGecko)
+    {
+        $request->merge([
+            'from_currency' => strtolower($request->query('from_currency')),
+            'to_currency'   => strtolower($request->query('to_currency')),
+        ]);
 
+        $request->validate([
+            'from_currency' => 'required|string|in:btc,eth,xrp,sol,gold,sp500,nasdaq,oil',
+            'to_currency'   => 'required|string|in:btc,eth,xrp,sol,gold,sp500,nasdaq,oil|different:from_currency',
+            'from_amount'   => 'required|numeric|min:0.00000001',
+        ]);
+
+        $fromId = $coinGecko->mapSymbolToId($request->from_currency);
+        $toId   = $coinGecko->mapSymbolToId($request->to_currency);
+
+        if (! $fromId || ! $toId) {
+            return response()->json(['status' => false, 'message' => 'Unsupported currency'], 400);
+        }
+
+        // ✅ Use mapped IDs only
+        $prices = $coinGecko->getPrices([$fromId, $toId], ['usd'], 60);
+
+        if (
+            !isset($prices[$fromId]['usd']) ||
+            !isset($prices[$toId]['usd'])
+        ) {
+            return response()->json(['status' => false, 'message' => 'Price fetch failed'], 500);
+        }
+
+        $fromPriceUsd = $prices[$fromId]['usd'];
+        $toPriceUsd   = $prices[$toId]['usd'];
+
+        $toAmount = ($request->from_amount * $fromPriceUsd) / $toPriceUsd;
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Swap preview calculated',
+            'data' => [
+                'from_currency'   => strtoupper($request->from_currency),
+                'to_currency'     => strtoupper($request->to_currency),
+                'from_amount'     => $request->from_amount,
+                'from_usd_value'  => $request->from_amount * $fromPriceUsd,
+                'to_amount'       => $toAmount,
+                'to_usd_value'    => $toAmount * $toPriceUsd,
+                'rate_used'       => [
+                    'from_price_usd' => $fromPriceUsd,
+                    'to_price_usd'   => $toPriceUsd,
+                ],
+            ],
+        ]);
+    }
 }
