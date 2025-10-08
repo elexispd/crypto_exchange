@@ -40,4 +40,8 @@ return [
         'api_key' => env('COINGECKO_API_KEY'),
     ],
 
+    'emails' => [
+        'support' => env('SUPPPORT_EMAIL', 'support@project87.com')
+    ]
+
 ];

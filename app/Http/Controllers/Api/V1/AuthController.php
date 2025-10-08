@@ -26,7 +26,7 @@ class AuthController extends Controller
             'password'           => Hash::make($data['password']),
             'country'            => $data['country'],
             'state'              => $data['state'],
-            'pin'                => $data['pin'],
+            // 'pin'                => $data['pin'],
             'phone'              => $data['phone'],
             'username'           => $data['username']
         ]);
@@ -59,6 +59,13 @@ class AuthController extends Controller
             return response()->json([
                 'status'  => false,
                 'message' => 'Invalid credentials',
+            ], 401);
+        }
+
+        if($user->status != 'active') {
+            return response()->json([
+                'status'  => false,
+                'message' => 'Account is not active',
             ], 401);
         }
 
@@ -101,6 +108,22 @@ class AuthController extends Controller
             'status'  => $isValid,
             'message' => $isValid ? 'Secret phrase verified successfully' : 'Secret phrase does not match',
         ], $isValid ? 200 : 401);
+    }
+
+    public function createPin(Request $request) {
+        $request->validate([
+            'pin' => 'required|digits:4',
+        ]);
+        $user = $request->user();
+        $user->pin = $request->pin;
+        $user->save();
+        return response()->json([
+            'status'  => true,
+            'message' => 'Pin created successfully',
+            'data'    => [
+                'pin'        => $user->pin
+            ],
+        ]);
     }
 
     public function verifyPin(Request $request)

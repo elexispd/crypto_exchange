@@ -21,6 +21,7 @@ Route::prefix('v1')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/verify-secret-phrase', [AuthController::class, 'verifySecretPhrase']);
         Route::post('/verify-pin', [AuthController::class, 'verifyPin']);
+        Route::post('/create-pin', [AuthController::class, 'createPin']);
         Route::post('/logout', [AuthController::class, 'logout']);
 
         Route::apiResource('kyc', KycDocumentController::class)->only(['index', 'store', 'show']);

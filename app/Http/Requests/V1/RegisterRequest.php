@@ -20,10 +20,10 @@ class RegisterRequest extends FormRequest
             'name'            => 'required|string|max:255',
             'email'           => 'required|email|unique:users,email',
             'password'        => 'required|string|min:8',
-            'pin'             => 'required|digits:4',
+            // 'pin'             => 'required|digits:4',
             'country'         => 'required|string|max:255',
             'state'           => 'required|string|max:255',
-            'phone'           => 'required|string|max:15|',
+            'phone'           => 'required|string|max:15|unique:users,phone',
             'username'        => 'required|string|unique:users,username',
         ];
     }
@@ -31,9 +31,9 @@ class RegisterRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'secret_phrase.required' => 'The secret phrase is required',
-            'pin.required'           => 'The pin is required',
-            'pin.digits'             => 'The pin must be 4 digits',
+            // 'secret_phrase.required' => 'The secret phrase is required',
+            // 'pin.required'           => 'The pin is required',
+            // 'pin.digits'             => 'The pin must be 4 digits',
             'country.required'       => 'The country is required',
             'state.required'         => 'The state is required',
             'phone.required'         => 'The phone is required',

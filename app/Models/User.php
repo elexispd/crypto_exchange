@@ -51,7 +51,7 @@ class User extends Authenticatable
 
     public function kycDocument()
     {
-        return $this->hasMany(KycDocument::class);
+        return $this->hasOne(KycDocument::class);
     }
 
     public function wallet() {
