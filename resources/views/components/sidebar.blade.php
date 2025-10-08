@@ -98,22 +98,22 @@
                 </a>
                 <ul id="kyc" class="nav-content collapse " data-bs-parent="#sidebar-nav">
                     <li>
-                        <a href="#">
+                        <a href="{{ route('admin.kyc.index', ['status' => 'pending']) }}">
                             <i class="bi bi-circle"></i><span>Pending KYCs</span>
                         </a>
                     </li>
                     <li>
-                        <a href="#">
+                        <a href="{{ route('admin.kyc.index', ['status' => 'verified']) }}">
                             <i class="bi bi-circle"></i><span>Approved KYCs</span>
                         </a>
                     </li>
                     <li>
-                        <a href="#">
+                        <a href="{{ route('admin.kyc.index', ['status' => 'rejected']) }}">
                             <i class="bi bi-circle"></i><span>Rejected KYCs</span>
                         </a>
                     </li>
                     <li>
-                        <a href="#">
+                        <a href="{{ route('admin.kyc.index') }}">
                             <i class="bi bi-circle"></i><span>All KYCs</span>
                         </a>
                     </li>

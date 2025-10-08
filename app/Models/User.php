@@ -49,10 +49,16 @@ class User extends Authenticatable
 
     ];
 
-    public function kycDocument()
+    public function kycDocuments()
     {
-        return $this->hasOne(KycDocument::class);
+        return $this->hasMany(KycDocument::class);
     }
+
+    public function latestKyc()
+    {
+        return $this->hasOne(KycDocument::class)->latestOfMany();
+    }
+
 
     public function wallet() {
         return $this->hasOne(Wallet::class);

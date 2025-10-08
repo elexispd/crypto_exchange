@@ -46,27 +46,29 @@
                         </div>
                         <div>
 
-                            {{-- <a class="btn  btn-sm" href="#" style="background: #191970; color: #fff;">
+                            @can('is-admin')
+                                {{-- <a class="btn  btn-sm" href="#" style="background: #191970; color: #fff;">
                                 <i class="fas fa-money-check-alt"></i> Debit
                             </a>
                             <a class="btn  btn-sm" href="#" style="background: #191970; color: #fff;">
                                 <i class="fas fa-money-check-alt"></i> Credit </a> --}}
-                            <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editUserModal">
-                                <i class="bi bi-pen me-1"></i> Edit
-                            </button>
-
-                            <form action="{{ route('users.changeStatus', $user) }}" method="POST" style="display:inline">
-                                @csrf
-                                @method('PUT')
-                                <input type="hidden" name="status"
-                                    value="{{ $user->status === 'active' ? 'inactive' : 'active' }}">
-                                <button type="submit"
-                                    class="btn btn-{{ $user->status === 'active' ? 'danger' : 'success' }} btn-sm">
-                                    <i
-                                        class="bi bi-{{ $user->status === 'active' ? 'exclamation-octagon' : 'check-circle' }} mr-1"></i>
-                                    {{ $user->status === 'active' ? 'Disable' : 'Enable' }}
+                                <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editUserModal">
+                                    <i class="bi bi-pen me-1"></i> Edit
                                 </button>
-                            </form>
+
+                                <form action="{{ route('users.changeStatus', $user) }}" method="POST" style="display:inline">
+                                    @csrf
+                                    @method('PUT')
+                                    <input type="hidden" name="status"
+                                        value="{{ $user->status === 'active' ? 'inactive' : 'active' }}">
+                                    <button type="submit"
+                                        class="btn btn-{{ $user->status === 'active' ? 'danger' : 'success' }} btn-sm">
+                                        <i
+                                            class="bi bi-{{ $user->status === 'active' ? 'exclamation-octagon' : 'check-circle' }} mr-1"></i>
+                                        {{ $user->status === 'active' ? 'Disable' : 'Enable' }}
+                                    </button>
+                                </form>
+                            @endcan
                         </div>
                     </div>
                     <div class="card-body">
@@ -176,9 +178,9 @@
                                         <i class="fas fa-id-card me-2"></i>KYC Documents
                                     </h5>
 
-                                    @if ($user->kycDocument)
+                                    @if ($user->latestKyc)
                                         @php
-                                            $kyc = $user->kycDocument;
+                                            $kyc = $user->latestKyc;
                                             $statusColors = [
                                                 'pending' => 'warning',
                                                 'verified' => 'success',
@@ -207,17 +209,26 @@
                                                     </span>
 
                                                     @can('is-admin')
-                                                    @if (strtolower($status) == 'pending')
-                                                        <div>
-                                                            <form action="" method="post">
-                                                                @csrf
-                                                                <button class="btn btn-outline-success">
-                                                                    <i class="bi bi-check-circle me-1"></i> Verify
-                                                                </button>
-                                                            </form>
-                                                        </div>
-                                                    @endif
+                                                        @if (strtolower($status) == 'pending')
+                                                            <div class="d-flex gap-2">
+                                                                {{-- ✅ Approve Button --}}
+                                                                <form action="{{ route('admin.kyc.update', $kyc) }}" method="POST">
+                                                                    @csrf
+                                                                    @method('PUT')
+                                                                    <input type="hidden" name="action" value="approve">
+                                                                    <button class="btn btn-outline-success">
+                                                                        <i class="bi bi-check-circle me-1"></i> Approve
+                                                                    </button>
+                                                                </form>
 
+                                                                {{-- ❌ Reject Button (opens modal) --}}
+                                                                <button type="button" class="btn btn-outline-danger"
+                                                                    data-bs-toggle="modal"
+                                                                    data-bs-target="#rejectModal{{ $kyc->id }}">
+                                                                    <i class="bi bi-x-circle me-1"></i> Reject
+                                                                </button>
+                                                            </div>
+                                                        @endif
                                                     @endcan
 
                                                 </div>
@@ -266,7 +277,8 @@
                                                                     <a href="{{ asset('storage/' . $kyc->back_image) }}"
                                                                         target="_blank"
                                                                         class="btn btn-outline-secondary btn-sm">
-                                                                        <i class="bi bi-file-earmark-pdf me-1"></i> View PDF
+                                                                        <i class="bi bi-file-earmark-pdf me-1"></i> View
+                                                                        PDF
                                                                     </a>
                                                                 @endif
                                                             </div>
@@ -367,4 +379,43 @@
             </div>
         </div>
     </div>
+
+    <!-- Reject Modal -->
+    <div class="modal fade" id="rejectModal{{ $kyc->id }}" tabindex="-1"
+        aria-labelledby="rejectModalLabel{{ $kyc->id }}" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="rejectModalLabel{{ $kyc->id }}">
+                        <i class="bi bi-x-circle me-2"></i> Reject KYC
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+
+                <form action="{{ route('admin.kyc.update', $kyc) }}" method="POST">
+                    @csrf
+                    @method('PUT')
+                    <input type="hidden" name="action" value="reject">
+
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="reason{{ $kyc->id }}" class="form-label">Rejection Reason</label>
+                            <textarea name="rejection_reason" id="reason{{ $kyc->id }}" class="form-control" rows="3" required
+                                placeholder="Enter reason for rejection..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-x-circle me-1"></i> Reject
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+
 @endsection
