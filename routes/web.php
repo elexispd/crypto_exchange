@@ -1,16 +1,13 @@
 <?php
 
+
 use Illuminate\Support\Facades\Route;
 
 
-use App\Http\Controllers\Admin\InvestmentController as AdminInvestmentController;
-use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
-use App\Http\Controllers\Admin\WithdrawController as AdminWithdrawalController;
-use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\KycController;
 use App\Http\Controllers\UserController;
-use App\Models\KycDocument;
+use App\Http\Controllers\WalletController;
 use Illuminate\Support\Facades\Mail;
 
 
@@ -36,6 +33,13 @@ Route::middleware(['web', 'auth'])->group(function () {
         Route::get('/', [KycController::class, 'index'])->name('admin.kyc.index');
         Route::put('/{kyc}/update', [KycController::class, 'update'])->name('admin.kyc.update');
         Route::delete('/{kyc}/delete', [KycController::class, 'destroy'])->name('admin.kyc.destroy');
+    });
+
+    Route::controller(WalletController::class)->prefix('wallet')->group(function () {
+        Route::get('/', [WalletController::class, 'index'])->name('admin.wallet.index');
+        Route::post('/store', [WalletController::class, 'store'])->name('admin.wallet.store');
+        Route::get('/create', [WalletController::class, 'create'])->name('admin.wallet.create');
+        Route::get('/{wallet}/delete', [WalletController::class, 'destroy'])->name('admin.wallet.destroy');
     });
 
 

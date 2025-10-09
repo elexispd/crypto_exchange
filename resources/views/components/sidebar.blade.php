@@ -34,12 +34,12 @@
                 </a>
                 <ul id="wallet" class="nav-content collapse " data-bs-parent="#sidebar-nav">
                     <li>
-                        <a href="#">
+                        <a href="{{ route('admin.wallet.create') }}">
                             <i class="bi bi-circle"></i><span>Create Wallet</span>
                         </a>
                     </li>
                     <li>
-                        <a href="#">
+                        <a href="{{ route('admin.wallet.index') }}">
                             <i class="bi bi-circle"></i><span>View Wallets</span>
                         </a>
                     </li>

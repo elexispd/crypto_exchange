@@ -29,6 +29,7 @@ class Wallet extends Model
         'sp500_balance',
         'nasdaq_balance',
         'oil_balance',
+        'created_by',
     ];
 
 
@@ -36,6 +37,11 @@ class Wallet extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 
     /**
