@@ -52,22 +52,22 @@
                 </a>
                 <ul id="deposit" class="nav-content collapse " data-bs-parent="#sidebar-nav">
                     <li>
-                        <a href="#">
+                        <a href="{{ route('admin.deposit.index', ['status' => 'pending']) }}">
                             <i class="bi bi-circle"></i><span>Pending Deposits</span>
                         </a>
                     </li>
                     <li>
-                        <a href="#">
+                        <a href="{{ route('admin.deposit.index', ['status' => 'approved']) }}">
                             <i class="bi bi-circle"></i><span>Approved Deposits</span>
                         </a>
                     </li>
                     <li>
-                        <a href="#">
+                        <a href="{{ route('admin.deposit.index', ['status' => 'rejected']) }}">
                             <i class="bi bi-circle"></i><span>Rejected Deposits</span>
                         </a>
                     </li>
                     <li>
-                        <a href="#">
+                        <a href="{{ route('admin.deposit.index') }}">
                             <i class="bi bi-circle"></i><span>All Deposits</span>
                         </a>
                     </li>

@@ -8,6 +8,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\KycController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WalletController;
+use App\Http\Controllers\DepositController;
 use Illuminate\Support\Facades\Mail;
 
 
@@ -41,6 +42,13 @@ Route::middleware(['web', 'auth'])->group(function () {
         Route::get('/create', [WalletController::class, 'create'])->name('admin.wallet.create');
         Route::get('/{wallet}/delete', [WalletController::class, 'destroy'])->name('admin.wallet.destroy');
     });
+
+    Route::controller(DepositController::class)->prefix('deposit')->group(function () {
+        Route::get('/', [DepositController::class, 'index'])->name('admin.deposit.index');
+        Route::put('/{deposit}', [DepositController::class, 'update'])->name('admin.deposit.update');
+
+    });
+
 
 
 });
