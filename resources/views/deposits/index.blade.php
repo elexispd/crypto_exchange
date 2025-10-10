@@ -28,6 +28,7 @@
                                         Coin
                                     </th>
                                     <th>Amount</th>
+                                    <th>Status</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -37,6 +38,12 @@
                                         <td>{{ $loop->iteration }}</td>
                                         <td>{{ $deposit->currency }}</td>
                                         <td>{{ number_format($deposit->amount, 2) }}</td>
+                                        <td>
+                                            <span
+                                                class="badge bg-{{ $deposit->status === 'approved' ? 'success' : ($deposit->status === 'rejected' ? 'danger' : 'warning') }}">
+                                                {{ ucfirst($deposit->status) }}
+                                            </span>
+                                        </td>
                                         <td>
                                             <button class="btn btn-sm btn-primary viewDepositBtn" data-bs-toggle="modal"
                                                 data-bs-target="#depositModal" data-user="{{ $deposit->user->name }}"

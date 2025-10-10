@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Deposit;
+use App\Models\Transaction;
 use Illuminate\Http\Request;
 
 class DepositController extends Controller
@@ -10,7 +11,8 @@ class DepositController extends Controller
     public function index(Request $request)
     {
         $status = $request->query('status');
-        $deposits = Deposit::query()
+        $deposits = Transaction::query()
+            ->where('type', 'deposit')
             ->when($status, function ($query, $status) {
                 $query->where('status', $status);
             })
@@ -22,7 +24,7 @@ class DepositController extends Controller
     }
 
 
-    public function update(Request $request, Deposit $deposit)
+    public function update(Request $request, Transaction $deposit)
     {
         $request->validate([
             'action' => 'required|in:approve,reject',

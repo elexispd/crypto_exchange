@@ -9,6 +9,7 @@ use App\Http\Controllers\KycController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WalletController;
 use App\Http\Controllers\DepositController;
+use App\Http\Controllers\TransactionController;
 use Illuminate\Support\Facades\Mail;
 
 
@@ -46,7 +47,10 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::controller(DepositController::class)->prefix('deposit')->group(function () {
         Route::get('/', [DepositController::class, 'index'])->name('admin.deposit.index');
         Route::put('/{deposit}', [DepositController::class, 'update'])->name('admin.deposit.update');
+    });
 
+    Route::controller(TransactionController::class)->prefix('transaction')->group(function () {
+        Route::get('/', [TransactionController::class, 'index'])->name('admin.transaction.index');
     });
 
 

@@ -80,12 +80,12 @@
                 </a>
                 <ul id="transactions" class="nav-content collapse " data-bs-parent="#sidebar-nav">
                     <li>
-                        <a href="#">
+                        <a href="{{ route('admin.transaction.index',['q'=>'swap']) }}">
                             <i class="bi bi-circle"></i><span>Swaps</span>
                         </a>
                     </li>
                     <li>
-                        <a href="#">
+                        <a href="{{ route('admin.transaction.index') }}">
                             <i class="bi bi-circle"></i><span>All Transactions</span>
                         </a>
                     </li>
