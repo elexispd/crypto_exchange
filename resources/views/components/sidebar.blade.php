@@ -75,6 +75,34 @@
             </li>
 
             <li class="nav-item">
+                <a class="nav-link collapsed" data-bs-target="#withdraw" data-bs-toggle="collapse" href="#">
+                    <i class="bi bi-broadcast"></i><span>Withdrawals</span><i class="bi bi-chevron-down ms-auto"></i>
+                </a>
+                <ul id="withdraw" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+                    <li>
+                        <a href="{{ route('admin.withdraw.index', ['status' => 'pending']) }}">
+                            <i class="bi bi-circle"></i><span>Pending Withdrawals</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('admin.withdraw.index', ['status' => 'approved']) }}">
+                            <i class="bi bi-circle"></i><span>Approved Withdrawals</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('admin.withdraw.index', ['status' => 'rejected']) }}">
+                            <i class="bi bi-circle"></i><span>Rejected Withdrawals</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('admin.withdraw.index') }}">
+                            <i class="bi bi-circle"></i><span>All Withdrawals</span>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+
+            <li class="nav-item">
                 <a class="nav-link collapsed" data-bs-target="#transactions" data-bs-toggle="collapse" href="#">
                     <i class="bi bi-currency-exchange"></i><span>Transactions</span><i class="bi bi-chevron-down ms-auto"></i>
                 </a>
@@ -115,6 +143,19 @@
                     <li>
                         <a href="{{ route('admin.kyc.index') }}">
                             <i class="bi bi-circle"></i><span>All KYCs</span>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="{{ route('users.changePasswordForm') }}">
+                    <i class="bi bi-lock"></i><span>Change Password</span><i class="bi bi-chevron-down ms-auto"></i>
+                </a>
+                <ul id="changePassword" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+                    <li>
+                        <a href="{{ route('users.changePasswordForm') }}">
+                            <i class="bi bi-circle"></i><span>Change Password</span>
                         </a>
                     </li>
                 </ul>

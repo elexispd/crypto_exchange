@@ -25,19 +25,27 @@ class TransactionController extends Controller
             $query->where('status', $request->input('status'));
         }
 
-        $transactions = $query->latest()->paginate(20);
+        // Use per_page from request, default to 20 if not provided
+        $perPage = (int) $request->input('per_page', 20);
+
+        // Add a sensible limit to prevent abuse
+        $perPage = min(max($perPage, 1), 100);
+
+        $transactions = $query->latest()->paginate($perPage);
 
         return response()->json([
             'status' => true,
+            'per_page' => $perPage,
             'transactions' => $transactions,
         ]);
     }
+
 
     public function show(Request $request, Transaction $transaction)
     {
         return response()->json([
             'status' => true,
-            'transaction' => $transaction,
+            'data' => $transaction,
         ]);
     }
 

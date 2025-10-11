@@ -2,11 +2,11 @@
 
 @section('content')
     <div class="pagetitle">
-        <h1>Deposit List</h1>
+        <h1>Withdrawal List</h1>
         <nav>
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Home</a></li>
-                <li class="breadcrumb-item">Deposits</li>
+                <li class="breadcrumb-item">Withdrawals</li>
                 <li class="breadcrumb-item active">Data</li>
             </ol>
         </nav>
@@ -17,7 +17,7 @@
             <div class="col-lg-12">
                 <div class="card">
                     <div class="card-body">
-                        <h6 class="card-title"> {{ ucfirst($status) }} Deposit Listing</h6>
+                        <h6 class="card-title"> {{ ucfirst($status) }} withdraw Listing</h6>
                         <x-alerts />
                         <!-- Table with stripped rows -->
                         <table class="table datatable">
@@ -33,27 +33,30 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach ($deposits as $deposit)
+                                @foreach ($withdraws as $withdraw)
                                     <tr>
                                         <td>{{ $loop->iteration }}</td>
-                                        <td>{{ $deposit->currency }}</td>
-                                        <td>{{ number_format($deposit->amount, 2) }}</td>
+                                        <td>{{ ucfirst($withdraw->currency) }}</td>
+                                        <td>{{ number_format($withdraw->amount, 2) }}</td>
                                         <td>
                                             <span
-                                                class="badge bg-{{ $deposit->status === 'approved' ? 'success' : ($deposit->status === 'rejected' ? 'danger' : 'warning') }}">
-                                                {{ ucfirst($deposit->status) }}
+                                                class="badge bg-{{ $withdraw->status === 'approved' ? 'success' : ($withdraw->status === 'rejected' ? 'danger' : 'warning') }}">
+                                                {{ ucfirst($withdraw->status) }}
                                             </span>
                                         </td>
                                         <td>
-                                            <button class="btn btn-sm btn-primary viewDepositBtn" data-bs-toggle="modal"
-                                                data-bs-target="#depositModal" data-user="{{ $deposit->user->name }}"
-                                                data-currency="{{ $deposit->currency }}"
-                                                data-wallet="{{ \App\Helpers\WalletHelper::getAddress($deposit->wallet, $deposit->currency) ?? 'N/A' }}"
-                                                data-status="{{ ucfirst($deposit->status) }}"
-                                                data-date="{{ $deposit->created_at->format('d M, Y h:i A') }}"
-                                                data-id="{{ $deposit->id }}">
+                                            <button class="btn btn-sm btn-primary viewwithdrawBtn" data-bs-toggle="modal"
+                                                data-bs-target="#withdrawModal" data-user="{{ $withdraw->user->name }}"
+                                                data-currency="{{ $withdraw->currency }}"
+                                                data-narration="{{ $withdraw->narrative ?? '—' }}"
+                                                data-address="{{ $withdraw->to_address ?? '—' }}"
+                                                data-amount="{{ number_format($withdraw->amount, 2, '.', '') }}"
+                                                data-status="{{ ucfirst($withdraw->status) }}"
+                                                data-date="{{ $withdraw->created_at->format('d M, Y h:i A') }}"
+                                                data-id="{{ $withdraw->id }}">
                                                 View
                                             </button>
+
                                         </td>
                                     </tr>
                                 @endforeach
@@ -67,12 +70,12 @@
             </div>
         </div>
 
-        <!-- Deposit Modal -->
-        <div class="modal fade" id="depositModal" tabindex="-1" aria-labelledby="depositModalLabel" aria-hidden="true">
+        <!-- withdraw Modal -->
+        <div class="modal fade" id="withdrawModal" tabindex="-1" aria-labelledby="withdrawModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content border-0 shadow">
                     <div class="modal-header bg-primary text-white">
-                        <h5 class="modal-title" id="depositModalLabel">Deposit Details</h5>
+                        <h5 class="modal-title" id="withdrawModalLabel">Withdraw Details</h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
                             aria-label="Close"></button>
                     </div>
@@ -82,8 +85,10 @@
                             <li class="list-group-item"><strong>User:</strong> <span id="modalUser"></span></li>
                             <li class="list-group-item"><strong>Currency:</strong> <span id="modalCurrency"></span></li>
                             <li class="list-group-item"><strong>Wallet Address:</strong> <span id="modalWallet"></span></li>
+                            <li class="list-group-item"><strong>Amount:</strong> <span id="modalAmount"></span></li>
+                            <li class="list-group-item"><strong>Narration:</strong> <span id="modalNarration"></span></li>
                             <li class="list-group-item"><strong>Status:</strong> <span id="modalStatus"></span></li>
-                            <li class="list-group-item"><strong>Deposited At:</strong> <span id="modalDate"></span></li>
+                            <li class="list-group-item"><strong>withdrawed At:</strong> <span id="modalDate"></span></li>
                         </ul>
                     </div>
 
@@ -118,14 +123,16 @@
 
         <script>
             document.addEventListener('DOMContentLoaded', function() {
-                const depositModal = document.getElementById('depositModal');
+                const withdrawModal = document.getElementById('withdrawModal');
 
-                depositModal.addEventListener('show.bs.modal', function(event) {
+                withdrawModal.addEventListener('show.bs.modal', function(event) {
                     const button = event.relatedTarget;
 
                     const user = button.getAttribute('data-user');
                     const currency = button.getAttribute('data-currency');
-                    const wallet = button.getAttribute('data-wallet');
+                    const wallet = button.getAttribute('data-address');
+                    const amount = button.getAttribute('data-amount');
+                    const narration = button.getAttribute('data-narration');
                     const status = button.getAttribute('data-status').toLowerCase();
                     const date = button.getAttribute('data-date');
                     const id = button.getAttribute('data-id');
@@ -134,13 +141,15 @@
                     document.getElementById('modalUser').textContent = user;
                     document.getElementById('modalCurrency').textContent = currency;
                     document.getElementById('modalWallet').textContent = wallet;
+                    document.getElementById('modalAmount').textContent = amount;
+                    document.getElementById('modalNarration').textContent = narration;
                     document.getElementById('modalStatus').textContent = status.charAt(0).toUpperCase() + status
                         .slice(1);
                     document.getElementById('modalDate').textContent = date;
 
                     // Update forms' action URLs dynamically
-                    document.getElementById('approveForm').action = `/deposit/${id}`;
-                    document.getElementById('declineForm').action = `/deposit/${id}`;
+                    document.getElementById('approveForm').action = `/withdraw/${id}`;
+                    document.getElementById('declineForm').action = `/withdraw/${id}`;
 
                     const actionButtons = document.getElementById('actionButtons');
                     const badgeContainer = document.getElementById('statusBadgeContainer');

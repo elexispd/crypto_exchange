@@ -20,4 +20,6 @@ class TransactionController extends Controller
         return view('transactions.index', compact('transactions', 'type'));
     }
 
+
+
 }

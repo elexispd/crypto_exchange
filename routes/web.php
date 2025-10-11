@@ -10,6 +10,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\WalletController;
 use App\Http\Controllers\DepositController;
 use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\WithdrawController;
 use Illuminate\Support\Facades\Mail;
 
 
@@ -25,10 +26,14 @@ Route::middleware(['web', 'auth'])->group(function () {
         Route::get('/', 'index')->name('users.index');
         Route::get('/create', 'create')->name('users.create');
         Route::post('/store', 'store')->name('users.store');
+        Route::get('/change-password', 'showChangePassword')->name('users.changePasswordForm');
+        Route::post('/change-password', 'changePassword')->name('users.changePassword');
         Route::put('/{user}/status', 'changeStatus')->name('users.changeStatus');
         Route::get('/{user}', 'show')->name('users.show');
         Route::put('/{user}/update', 'update')->name('users.update');
         Route::delete('/{user}/delete', 'destroy')->name('users.destroy');
+
+
     });
 
     Route::controller(KycController::class)->prefix('kyc')->group(function () {
@@ -49,9 +54,16 @@ Route::middleware(['web', 'auth'])->group(function () {
         Route::put('/{deposit}', [DepositController::class, 'update'])->name('admin.deposit.update');
     });
 
-    Route::controller(TransactionController::class)->prefix('transaction')->group(function () {
-        Route::get('/', [TransactionController::class, 'index'])->name('admin.transaction.index');
+    Route::controller(WithdrawController::class)->prefix('withdraw')->group(function () {
+        Route::get('/', 'index')->name('admin.withdraw.index');
+        Route::put('/{withdraw}', 'update')->name('admin.withdraw.update');
     });
+
+    Route::controller(TransactionController::class)->prefix('transaction')->group(function () {
+        Route::get('/', 'index')->name('admin.transaction.index');
+    });
+
+
 
 
 

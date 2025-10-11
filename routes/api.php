@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\V1\DepositController;
 use App\Http\Controllers\Api\V1\KycDocumentController;
 use App\Http\Controllers\Api\V1\TransactionController;
 use App\Http\Controllers\Api\V1\WalletController;
+use App\Http\Controllers\Api\V1\WithdrawController;
 
 Route::prefix('v1')->group(function () {
     // Public
@@ -39,15 +40,18 @@ Route::prefix('v1')->group(function () {
 
         Route::get('/transactions', [TransactionController::class, 'index']);
         Route::post('/transactions/deposit', [TransactionController::class, 'deposit']);
-        Route::post('/transactions/withdraw', [TransactionController::class, 'withdraw']);
+        // Route::post('/transactions/withdraw', [TransactionController::class, 'withdraw']);
+
+        Route::post('/withdraw', [WithdrawController::class, 'store']);
 
         Route::post('/transactions/swap', [TransactionController::class, 'swap']);
         Route::get('/transactions/preview-swap', [TransactionController::class, 'previewSwap']);
 
 
         Route::get('/transactions/deposits/{transaction}', [TransactionController::class, 'show']);
-        Route::get('/transactions/withdrawals/{transaction}', [TransactionController::class, 'show']);
+        Route::get('/transactions/withdraws/{transaction}', [TransactionController::class, 'show']);
         Route::get('/transactions/swaps/{transaction}', [TransactionController::class, 'show']);
+
 
 
     });
