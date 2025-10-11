@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Models\Deposit;
 use App\Models\Wallet;
+use App\Models\AdminWallet;
 use Illuminate\Http\Request;
 
 class DepositController extends Controller
@@ -14,13 +15,13 @@ class DepositController extends Controller
         $request->merge([
             'currency' => strtoupper($request->currency),
         ]);
-        $request->validate([
+        $validated = $request->validate([
             'wallet_id' => 'required|uuid|exists:wallets,id',
             'currency'     => 'required|string|in:BTC,ETH,XRP,SOL',
             'amount'    => 'required|numeric|min:0.00000001'
         ]);
 
-        $userId = $request->user()->id;
+        $network = strtoupper($validated['currency']);
 
         $wallet = Wallet::where('id', $request->wallet_id)
             ->where('user_id', $request->user()->id)
@@ -41,7 +42,7 @@ class DepositController extends Controller
             'SOL' => $wallet->solana_address,
         ];
 
-        $depositAddress = $addressMap[$request->currency] ?? null;
+        $depositAddress = $addressMap[$network] ?? null;
 
         if (! $depositAddress) {
             return response()->json([
@@ -50,13 +51,20 @@ class DepositController extends Controller
             ], 422);
         }
 
+        $admnWallet = AdminWallet::query()
+                    ->where('network', $network)
+                    ->where('status', 'active')
+                    ->first();
+
         $deposit = Deposit::create([
             'user_id'   => $request->user()->id,
             'wallet_id' => $wallet->id,
-            'currency'  => $request->currency,
-            'amount'    => $request->amount,
+            'network'  => $network,
+            'amount'    => $validated['amount'],
             'status'    => 'pending',
         ]);
+
+
 
         return response()->json([
             'status'  => true,

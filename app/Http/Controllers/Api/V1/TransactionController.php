@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-
+use App\Models\adminWallet;
 use App\Models\Transaction;
 use App\Models\Wallet;
 use App\Services\CoinGeckoService;
@@ -54,9 +54,9 @@ class TransactionController extends Controller
     {
         $request->merge(['currency' => strtoupper($request->currency)]);
 
-        $request->validate([
+        $validated =$request->validate([
             'wallet_id' => 'required|uuid|exists:wallets,id',
-            'currency'  => 'required|string|in:BTC,ETH,XRP,SOL',
+            'network'  => 'required|string|in:BTC,ETH,XRP,SOL,btc,eth,xrp,sol',
             'amount'    => 'required|numeric|min:0.00000001'
         ]);
 
@@ -64,16 +64,26 @@ class TransactionController extends Controller
             ->where('user_id', $request->user()->id)
             ->first();
 
+        $network = strtoupper($validated['network']);
+
         if (! $wallet) {
             return response()->json(['status' => false, 'message' => 'Invalid wallet'], 403);
+        }
+
+        $admnWallet = adminWallet::query()
+                    ->where('network', $network)
+                    ->where('status', 'active')
+                    ->first();
+        if (! $admnWallet) {
+            return response()->json(['status' => false, 'message' => 'Payment wallet not found'], 403);
         }
 
         $transaction = Transaction::create([
             'user_id'   => $request->user()->id,
             'wallet_id' => $wallet->id,
             'type'      => 'deposit',
-            'currency'  => strtoupper($request->currency),
-            'amount'    => $request->amount,
+            'currency'  => $network,
+            'amount'    => $validated['amount'],
             'status'    => 'pending',
         ]);
 
@@ -81,6 +91,7 @@ class TransactionController extends Controller
             'status' => true,
             'message' => 'Deposit transaction created',
             'transaction' => $transaction,
+            'payment_wallet_address' => $admnWallet->address,
         ]);
     }
 

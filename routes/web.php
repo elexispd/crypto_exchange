@@ -1,6 +1,6 @@
 <?php
 
-
+use App\Http\Controllers\AdminWalletController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -40,6 +40,15 @@ Route::middleware(['web', 'auth'])->group(function () {
         Route::get('/', [KycController::class, 'index'])->name('admin.kyc.index');
         Route::put('/{kyc}/update', [KycController::class, 'update'])->name('admin.kyc.update');
         Route::delete('/{kyc}/delete', [KycController::class, 'destroy'])->name('admin.kyc.destroy');
+    });
+
+    Route::prefix('admin/wallet/')->controller(AdminWalletController::class)
+    ->name('admin.walletmethod.')
+    ->group(function () {
+        Route::get('create', 'create')->name('create');
+        Route::get('', 'index')->name('index');
+        Route::post('store', 'store')->name('store');
+        Route::put('{wallet}', 'updateStatus')->name('updateStatus');
     });
 
     Route::controller(WalletController::class)->prefix('wallet')->group(function () {

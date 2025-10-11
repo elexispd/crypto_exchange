@@ -29,8 +29,26 @@
             </li>
 
             <li class="nav-item">
+                <a class="nav-link collapsed" data-bs-target="#admin-wallet" data-bs-toggle="collapse" href="#">
+                    <i class="bi bi-wallet"></i><span>Wallets</span><i class="bi bi-chevron-down ms-auto"></i>
+                </a>
+                <ul id="admin-wallet" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+                    <li>
+                        <a href="{{ route('admin.walletmethod.create') }}">
+                            <i class="bi bi-circle"></i><span>Create Wallet</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('admin.walletmethod.index') }}">
+                            <i class="bi bi-circle"></i><span>View Wallets</span>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+
+            <li class="nav-item">
                 <a class="nav-link collapsed" data-bs-target="#wallet" data-bs-toggle="collapse" href="#">
-                    <i class="bi bi-cash-coin"></i><span>Wallet</span><i class="bi bi-chevron-down ms-auto"></i>
+                    <i class="bi bi-wallet2"></i><span>User Wallets</span><i class="bi bi-chevron-down ms-auto"></i>
                 </a>
                 <ul id="wallet" class="nav-content collapse " data-bs-parent="#sidebar-nav">
                     <li>
