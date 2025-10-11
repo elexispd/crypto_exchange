@@ -18,6 +18,10 @@ class CoinGeckoService
         'eth'    => 'ethereum',
         'xrp'    => 'ripple',
         'sol'    => 'solana',
+        'bitcoin' => 'bitcoin',
+        'ethereum' => 'ethereum',
+        'ripple' => 'xrp',
+        'solana' => 'sol',
         'gold'   => 'tether-gold',     // example
         'sp500'  => 's-p-500',         // if you track synthetic assets, you may need another API
         'nasdaq' => 'nasdaq-100',      // same here
@@ -52,6 +56,7 @@ class CoinGeckoService
      */
     public function getPrice(string $id, string $currency = 'usd', int $ttl = 43200) // 12 hours
     {
+        $id = $this->mapSymbolToId($id);
         $cacheKey = "crypto_price_{$id}_{$currency}";
 
         return Cache::remember($cacheKey, $ttl, function () use ($id, $currency) {

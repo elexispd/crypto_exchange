@@ -43,6 +43,7 @@ Route::prefix('v1')->group(function () {
         // Route::post('/transactions/withdraw', [TransactionController::class, 'withdraw']);
 
         Route::post('/withdraw', [WithdrawController::class, 'store']);
+        Route::get('/withdraw/info', [WithdrawController::class, 'withdrawInfo']);
 
         Route::post('/transactions/swap', [TransactionController::class, 'swap']);
         Route::get('/transactions/preview-swap', [TransactionController::class, 'previewSwap']);

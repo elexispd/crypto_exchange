@@ -61,6 +61,8 @@ Route::middleware(['web', 'auth'])->group(function () {
 
     Route::controller(TransactionController::class)->prefix('transaction')->group(function () {
         Route::get('/', 'index')->name('admin.transaction.index');
+        Route::get('/create-fee', 'fees')->name('admin.transaction.fees');
+        Route::post('/create-fee', 'storeFee')->name('admin.transaction.storeFee');
     });
 
 

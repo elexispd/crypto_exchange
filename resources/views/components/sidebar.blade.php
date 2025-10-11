@@ -113,6 +113,11 @@
                         </a>
                     </li>
                     <li>
+                        <a href="{{ route('admin.transaction.fees') }}">
+                            <i class="bi bi-circle"></i><span>Transaction Fee</span>
+                        </a>
+                    </li>
+                    <li>
                         <a href="{{ route('admin.transaction.index') }}">
                             <i class="bi bi-circle"></i><span>All Transactions</span>
                         </a>
