@@ -9,6 +9,10 @@ use App\Models\Wallet;
 use App\Services\CoinGeckoService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Mail\DepositMail;
+use App\Mail\SwapMail;
+use App\Models\User;
+use Illuminate\Support\Facades\Mail;
 
 class TransactionController extends Controller
 {
@@ -52,16 +56,16 @@ class TransactionController extends Controller
     // Create a deposit transaction
     public function deposit(Request $request)
     {
-        $request->merge(['currency' => strtoupper($request->currency)]);
-
+        $request->merge(['currency' => strtoupper($request->network)]);
+        $user = $request->user();
         $validated =$request->validate([
             'wallet_id' => 'required|uuid|exists:wallets,id',
             'network'  => 'required|string|in:BTC,ETH,XRP,SOL,btc,eth,xrp,sol',
             'amount'    => 'required|numeric|min:0.00000001'
         ]);
 
-        $wallet = Wallet::where('id', $request->wallet_id)
-            ->where('user_id', $request->user()->id)
+        $wallet = Wallet::where('id', $validated['wallet_id'])
+            ->where('user_id', $user->id)
             ->first();
 
         $network = strtoupper($validated['network']);
@@ -79,13 +83,15 @@ class TransactionController extends Controller
         }
 
         $transaction = Transaction::create([
-            'user_id'   => $request->user()->id,
+            'user_id'   => $user->id,
             'wallet_id' => $wallet->id,
             'type'      => 'deposit',
             'currency'  => $network,
             'amount'    => $validated['amount'],
             'status'    => 'pending',
         ]);
+
+        Mail::to($user->email)->queue(new DepositMail($user, $transaction));
 
         return response()->json([
             'status' => true,
@@ -197,6 +203,8 @@ class TransactionController extends Controller
             'to_amount'     => $toAmount,
             'status'        => 'completed',
         ]);
+
+        Mail::to($request->user()->email)->queue(new SwapMail($request->user(), $transaction));
 
         return response()->json([
             'status' => true,

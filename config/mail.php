@@ -49,6 +49,26 @@ return [
             'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST)),
         ],
 
+        // Support Mailer
+        'support' => [
+            'transport' => 'smtp',
+            'host' => env('MAIL_HOST', 'smtp.coafcare.online'),
+            'port' => 465,
+            'encryption' => 'ssl',
+            'username' => env('SUPPORT_EMAIL'),
+            'password' => env('SUPPORT_PASSWORD'),
+        ],
+
+        // Finance / Transactions Mailer
+        'info' => [
+            'transport' => 'smtp',
+            'host' => env('MAIL_HOST', 'smtp.coafcare.online'),
+            'port' => 465,
+            'encryption' => 'ssl',
+            'username' => env('INFO_EMAIL'),
+            'password' => env('INFO_PASSWORD'),
+        ],
+
         'ses' => [
             'transport' => 'ses',
         ],

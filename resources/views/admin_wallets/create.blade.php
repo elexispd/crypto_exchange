@@ -47,9 +47,13 @@
 
                             <div class="col-md-12 mt-3">
                                 <label for="inputName5" class="form-label">Network</label>
-                                <input type="text" name="network"
-                                    class="form-control @error('network') is-invalid @enderror" id="inputName5"
-                                    value="{{ old('network') }}" required>
+                                <select name="network" class="form-control @error('network') is-invalid @enderror" id="inputName5" required>
+                                    <option value="">Select Network</option>
+                                    <option value="BTC">BTC</option>
+                                    <option value="ETH">ETH</option>
+                                    <option value="SOL">SOL</option>
+                                    <option value="XRP">XRP</option>
+                                </select>
                                 @error('network')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror

@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\WithdrawStatusMail;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 class WithdrawController extends Controller
 {
@@ -26,15 +28,21 @@ class WithdrawController extends Controller
             'action' => 'required|in:approve,reject',
         ]);
 
+        $status = $request->action === 'approve' ? 'approved' : 'rejected';
+
         if ($request->action === 'approve') {
             $withdraw->update([
-                'status' => 'approved'
+                'status' => $status
             ]);
         } else {
             $withdraw->update([
-                'status' => 'rejected'
+                'status' => $status
             ]);
         }
+
+
+        // send email
+        Mail::to($withdraw->user->email)->queue(new WithdrawStatusMail($withdraw->user, $withdraw, $status));
 
         return back()->with('success', "Withdrawal {$request->action}d successfully.");
     }

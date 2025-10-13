@@ -7,11 +7,13 @@ use Illuminate\Http\Request;
 use App\Models\Transaction;
 use App\Models\Wallet;
 use App\Helpers\WalletHelper;
+use App\Mail\WithdrawMail;
 use App\Models\TransactionFee;
 use App\Models\User;
 use App\Services\CoinGeckoService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 
 class WithdrawController extends Controller
 {
@@ -27,7 +29,7 @@ class WithdrawController extends Controller
             'narrative' => 'nullable|string|max:255',
         ]);
 
-        $user = Auth::user();
+        $user = $request->user();
         $wallet = Wallet::where('user_id', $user->id)->first();
 
         if (! $wallet) {
@@ -89,6 +91,8 @@ class WithdrawController extends Controller
             ]);
 
             DB::commit();
+
+            Mail::to($user->email)->queue(new WithdrawMail($user, $transaction));
 
             return response()->json([
                 'status' => true,

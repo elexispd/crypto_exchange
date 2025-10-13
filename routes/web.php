@@ -15,9 +15,13 @@ use Illuminate\Support\Facades\Mail;
 
 
 
+
 Route::get('/', function () {
     return ['Laravel' => app()->version()];
 });
+
+
+
 
 Route::middleware(['web', 'auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');

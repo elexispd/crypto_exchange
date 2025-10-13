@@ -41,7 +41,8 @@ return [
     ],
 
     'emails' => [
-        'support' => env('SUPPPORT_EMAIL', 'support@project87.com')
+        'support' => env('SUPPPORT_EMAIL', 'support@project87.com'),
+        'no_reply' => env('NO_REPLY_EMAIL', 'no-reply@project87.com')
     ]
 
 ];
