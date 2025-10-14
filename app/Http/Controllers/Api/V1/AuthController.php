@@ -9,8 +9,13 @@ use Illuminate\Support\Str;
 use App\Http\Requests\V1\LoginRequest;
 use Illuminate\Http\Request;
 use App\Http\Requests\V1\RegisterRequest;
+use App\Mail\PasswordResetOtpMail;
+use App\Mail\WelcomeMail;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 
 class AuthController extends Controller
 {
@@ -30,6 +35,8 @@ class AuthController extends Controller
             'phone'              => $data['phone'],
             'username'           => $data['username']
         ]);
+
+        Mail::to($data['email'])->queue(new WelcomeMail($user));
 
         return response()->json([
             'status'  => true,
@@ -174,30 +181,92 @@ class AuthController extends Controller
         ], $status === Password::RESET_LINK_SENT ? 200 : 400);
     }
 
+
+    public function requestReset(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email|exists:users,email',
+        ]);
+
+        $otp = rand(100000, 999999); // 6-digit OTP
+        $email = $request->email;
+
+        DB::table('password_reset_tokens')->updateOrInsert(
+            ['email' => $email],
+            [
+                'token' => $otp,
+                'created_at' => Carbon::now()
+            ]
+        );
+
+        // get user by email
+        $user = User::where('email', $email)->first();
+
+        Mail::to($email)->queue(new PasswordResetOtpMail($otp, $user->first_name));
+
+        return response()->json(['status' => true, 'message' => 'OTP sent to your email.'], 200);
+    }
+
+    // Step 2: Verify OTP
+    public function verifyOtp(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'otp' => 'required|string',
+        ]);
+
+        $record = DB::table('password_reset_tokens')
+                    ->where('email', $request->email)
+                    ->first();
+
+        if (!$record || $record->token !== $request->otp) {
+            return response()->json(['message' => 'Invalid OTP.'], 400);
+        }
+
+        // Optional: Check OTP expiration (10 minutes)
+        if (Carbon::parse($record->created_at)->addMinutes(10)->isPast()) {
+            return response()->json(['message' => 'OTP expired.'], 400);
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => 'OTP verified successfully.'
+        ], 200);
+    }
+
+    // Step 3: Reset Password
     public function resetPassword(Request $request)
     {
         $request->validate([
             'email' => 'required|email|exists:users,email',
-            'token' => 'required|string',
+            'otp' => 'required|string',
             'password' => 'required|string|min:8|confirmed',
         ]);
 
-        $status = Password::reset(
-            $request->only('email', 'password', 'password_confirmation', 'token'),
-            function ($user, $password) {
-                $user->forceFill([
-                    'password' => Hash::make($password),
-                    'remember_token' => Str::random(60),
-                ])->save();
+        $record = DB::table('password_reset_tokens')
+                    ->where('email', $request->email)
+                    ->first();
 
-                event(new PasswordReset($user));
-            }
-        );
+        if (!$record || $record->token !== $request->otp) {
+            return response()->json(['message' => 'Invalid OTP.'], 400);
+        }
+
+        if (Carbon::parse($record->created_at)->addMinutes(10)->isPast()) {
+            return response()->json(['message' => 'OTP expired.'], 400);
+        }
+
+        // Update user password
+        User::where('email', $request->email)->update([
+            'password' => Hash::make($request->password),
+        ]);
+
+        // Delete OTP record
+        DB::table('password_reset_tokens')->where('email', $request->email)->delete();
 
         return response()->json([
-            'status' => $status === Password::PASSWORD_RESET,
-            'message' => __($status),
-        ], $status === Password::PASSWORD_RESET ? 200 : 400);
+            'status' => true,
+            'message' => 'Password reset successfully.'
+        ], 200);
     }
 
 

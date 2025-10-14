@@ -17,6 +17,9 @@ Route::prefix('v1')->group(function () {
 
 
     Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
+
+    Route::post('/request-reset', [AuthController::class, 'requestReset']);
+    Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
     Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 
     // Protected (Sanctum)
