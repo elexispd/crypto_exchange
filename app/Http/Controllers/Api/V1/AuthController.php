@@ -20,40 +20,47 @@ use Illuminate\Support\Facades\Mail;
 class AuthController extends Controller
 {
 
+
+
     public function register(RegisterRequest $request)
     {
+        return DB::transaction(function () use ($request) {
+            $data = $request->validated();
 
-        $data = $request->validated();
+            $user = User::create([
+                'name'               => $data['name'],
+                'email'              => $data['email'],
+                'password'           => Hash::make($data['password']),
+                'country'            => $data['country'],
+                'state'              => $data['state'],
+                'phone'              => $data['phone'],
+                'username'           => $data['username']
+            ]);
 
-        $user = User::create([
-            'name'               => $data['name'],
-            'email'              => $data['email'],
-            'password'           => Hash::make($data['password']),
-            'country'            => $data['country'],
-            'state'              => $data['state'],
-            // 'pin'                => $data['pin'],
-            'phone'              => $data['phone'],
-            'username'           => $data['username']
-        ]);
+            // Generate token
+            $token = $user->createToken('auth_token')->plainTextToken;
 
-        Mail::to($data['email'])->queue(new WelcomeMail($user));
+            // Send email outside transaction for better performance
+            Mail::to($data['email'])->queue(new WelcomeMail($user));
 
-        return response()->json([
-            'status'  => true,
-            'message' => 'User registered successfully',
-            'data'    => [
-                'id'            => $user->id,
-                'name'          => $user->name,
-                'email'         => $user->email,
-                'username'      => $user->username,
-                'country'       => $user->country,
-                'state'         => $user->state,
-                'phone'         => $user->phone,
-                'kyc_status'    => $user->kyc_status,
-                'is_Admin'      => $user->is_admin ? true : false,
-                'created_at'    => $user->created_at
-            ],
-        ], 201);
+            return response()->json([
+                'status'  => true,
+                'message' => 'User registered successfully',
+                'token'   => $token,
+                'data'    => [
+                    'id'            => $user->id,
+                    'name'          => $user->name,
+                    'email'         => $user->email,
+                    'username'      => $user->username,
+                    'country'       => $user->country,
+                    'state'         => $user->state,
+                    'phone'         => $user->phone,
+                    'kyc_status'    => $user->kyc_status,
+                    'is_Admin'      => $user->is_admin ? true : false,
+                    'created_at'    => $user->created_at
+                ],
+            ], 201);
+        });
     }
 
     public function login(LoginRequest $request)
@@ -69,7 +76,7 @@ class AuthController extends Controller
             ], 401);
         }
 
-        if($user->status != 'active') {
+        if ($user->status != 'active') {
             return response()->json([
                 'status'  => false,
                 'message' => 'Account is not active',
@@ -117,7 +124,8 @@ class AuthController extends Controller
         ], $isValid ? 200 : 401);
     }
 
-    public function createPin(Request $request) {
+    public function createPin(Request $request)
+    {
         $request->validate([
             'pin' => 'required|digits:4',
         ]);
@@ -216,8 +224,8 @@ class AuthController extends Controller
         ]);
 
         $record = DB::table('password_reset_tokens')
-                    ->where('email', $request->email)
-                    ->first();
+            ->where('email', $request->email)
+            ->first();
 
         if (!$record || $record->token !== $request->otp) {
             return response()->json(['message' => 'Invalid OTP.'], 400);
@@ -244,8 +252,8 @@ class AuthController extends Controller
         ]);
 
         $record = DB::table('password_reset_tokens')
-                    ->where('email', $request->email)
-                    ->first();
+            ->where('email', $request->email)
+            ->first();
 
         if (!$record || $record->token !== $request->otp) {
             return response()->json(['message' => 'Invalid OTP.'], 400);
@@ -268,7 +276,4 @@ class AuthController extends Controller
             'message' => 'Password reset successfully.'
         ], 200);
     }
-
-
-
 }
