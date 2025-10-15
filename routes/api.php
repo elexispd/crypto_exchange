@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\CardController;
 use App\Http\Controllers\Api\V1\CryptoApiController;
 use App\Http\Controllers\Api\V1\DepositController;
 use App\Http\Controllers\Api\V1\KycDocumentController;
@@ -56,6 +57,12 @@ Route::prefix('v1')->group(function () {
         Route::get('/transactions/deposits/{transaction}', [TransactionController::class, 'show']);
         Route::get('/transactions/withdraws/{transaction}', [TransactionController::class, 'show']);
         Route::get('/transactions/swaps/{transaction}', [TransactionController::class, 'show']);
+
+        Route::get('/cards', [CardController::class, 'show']);
+        Route::post('/cards', [CardController::class, 'store']);
+        Route::post('/cards/freeze', [CardController::class, 'freeze']);
+        Route::post('/cards/unfreeze', [CardController::class, 'unfreeze']);
+        Route::delete('/cards/{card_id}', [CardController::class, 'destroy']);
 
 
 
