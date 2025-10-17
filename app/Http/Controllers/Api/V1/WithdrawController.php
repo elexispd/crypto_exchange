@@ -92,7 +92,7 @@ class WithdrawController extends Controller
 
             DB::commit();
 
-            Mail::to($user->email)->queue(new WithdrawMail($user, $transaction));
+            Mail::to($user->email)->send(new WithdrawMail($user, $transaction));
 
             return response()->json([
                 'status' => true,

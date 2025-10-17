@@ -91,7 +91,7 @@ class TransactionController extends Controller
             'status'    => 'pending',
         ]);
 
-        Mail::to($user->email)->queue(new DepositMail($user, $transaction));
+        Mail::to($user->email)->send(new DepositMail($user, $transaction));
 
         return response()->json([
             'status' => true,
@@ -204,7 +204,7 @@ class TransactionController extends Controller
             'status'        => 'completed',
         ]);
 
-        Mail::to($request->user()->email)->queue(new SwapMail($request->user(), $transaction));
+        Mail::to($request->user()->email)->send(new SwapMail($request->user(), $transaction));
 
         return response()->json([
             'status' => true,

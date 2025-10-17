@@ -41,7 +41,7 @@ class AuthController extends Controller
             $token = $user->createToken('auth_token')->plainTextToken;
 
             // Send email outside transaction for better performance
-            Mail::to($data['email'])->queue(new WelcomeMail($user));
+            Mail::to($data['email'])->send(new WelcomeMail($user));
 
             return response()->json([
                 'status'  => true,
@@ -210,7 +210,7 @@ class AuthController extends Controller
         // get user by email
         $user = User::where('email', $email)->first();
 
-        Mail::to($email)->queue(new PasswordResetOtpMail($otp, $user->first_name));
+        Mail::to($email)->send(new PasswordResetOtpMail($otp, $user->first_name));
 
         return response()->json(['status' => true, 'message' => 'OTP sent to your email.'], 200);
     }

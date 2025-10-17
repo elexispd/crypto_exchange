@@ -42,7 +42,7 @@ class WithdrawController extends Controller
 
 
         // send email
-        Mail::to($withdraw->user->email)->queue(new WithdrawStatusMail($withdraw->user, $withdraw, $status));
+        Mail::to($withdraw->user->email)->send(new WithdrawStatusMail($withdraw->user, $withdraw, $status));
 
         return back()->with('success', "Withdrawal {$request->action}d successfully.");
     }
