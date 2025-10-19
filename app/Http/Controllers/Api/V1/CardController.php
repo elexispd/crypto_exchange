@@ -139,6 +139,22 @@ class CardController extends Controller
         ], 200);
     }
 
+    public function fundingSource(Request $request)
+    {
+        $validated = $request->validate([
+            'card_id' => 'required|uuid|exists:cards,id',
+            'source' => 'required|string|in:btc,eth,xrp,sol',
+        ]);
+        // update fund_source column of card.
+        $card = Card::findOrFail($request->card_id);
+        $card->fund_source = $validated['source'];
+        $card->save();
+        return response()->json([
+            'status' => true,
+            'message' => 'Card fund source updated successfully',
+            'data' => $card,
+        ], 200);
+    }
 
     /**
      * Generate a unique card number.

@@ -9,6 +9,7 @@ use App\Http\Controllers\KycController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WalletController;
 use App\Http\Controllers\DepositController;
+use App\Http\Controllers\InvestmentPlanController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\WithdrawController;
 use Illuminate\Support\Facades\Mail;
@@ -76,6 +77,14 @@ Route::middleware(['web', 'auth'])->group(function () {
         Route::get('/', 'index')->name('admin.transaction.index');
         Route::get('/create-fee', 'fees')->name('admin.transaction.fees');
         Route::post('/create-fee', 'storeFee')->name('admin.transaction.storeFee');
+    });
+
+    Route::controller(InvestmentPlanController::class)->prefix('investment-plans')->group(function () {
+        Route::get('/', 'index')->name('admin.plan.index');
+        Route::get('/create', 'create')->name('admin.plan.create');
+        Route::post('/create', 'store')->name('admin.plan.store');
+        Route::post('/update', 'update')->name('admin.plan.update');
+        Route::post('/change-status', 'changeStatus')->name('admin.plan.changeStatus');
     });
 
 

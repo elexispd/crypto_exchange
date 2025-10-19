@@ -144,6 +144,27 @@
             </li>
 
             <li class="nav-item">
+                <a class="nav-link collapsed" data-bs-target="#investment_plans" data-bs-toggle="collapse" href="#">
+                    <i class="bi bi-currency-exchange"></i><span>Investment Plans</span><i class="bi bi-chevron-down ms-auto"></i>
+                </a>
+                <ul id="investment_plans" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+
+                    <li>
+                        <a href="{{ route('admin.plan.create') }}">
+                            <i class="bi bi-circle"></i><span>Create Plan</span>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="{{ route('admin.plan.index') }}">
+                            <i class="bi bi-circle"></i><span>View Plans</span>
+                        </a>
+                    </li>
+
+                </ul>
+            </li>
+
+            <li class="nav-item">
                 <a class="nav-link collapsed" data-bs-target="#kyc" data-bs-toggle="collapse" href="#">
                     <i class="bi bi-file-earmark-person"></i><span>KYCs</span><i class="bi bi-chevron-down ms-auto"></i>
                 </a>

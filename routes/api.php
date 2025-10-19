@@ -6,15 +6,18 @@ use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CardController;
 use App\Http\Controllers\Api\V1\CryptoApiController;
 use App\Http\Controllers\Api\V1\DepositController;
+use App\Http\Controllers\Api\V1\InvestController;
 use App\Http\Controllers\Api\V1\KycDocumentController;
 use App\Http\Controllers\Api\V1\TransactionController;
 use App\Http\Controllers\Api\V1\WalletController;
 use App\Http\Controllers\Api\V1\WithdrawController;
 
+
 Route::prefix('v1')->group(function () {
     // Public
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/logout', [AuthController::class, 'logout']);
 
 
     Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
@@ -60,9 +63,15 @@ Route::prefix('v1')->group(function () {
 
         Route::get('/cards', [CardController::class, 'show']);
         Route::post('/cards', [CardController::class, 'store']);
+        Route::put('/cards', [CardController::class, 'fundingSource']);
         Route::post('/cards/freeze', [CardController::class, 'freeze']);
         Route::post('/cards/unfreeze', [CardController::class, 'unfreeze']);
         Route::delete('/cards/{card_id}', [CardController::class, 'destroy']);
+
+        Route::post('/investments', [InvestController::class, 'store']);
+        Route::get('/investments', [InvestController::class, 'index']);
+        Route::get('/investments/{invest}', [InvestController::class, 'show']);
+
 
 
 

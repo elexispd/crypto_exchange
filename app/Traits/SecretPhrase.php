@@ -31,7 +31,7 @@ trait SecretPhrase
         'explorer', 'pioneer', 'trailblazer', 'visionary', 'prophet', 'oracle', 'sage', 'mentor', 'apprentice', 'scholar',
         'constellation', 'universe', 'infinity', 'cosmos', 'nebula', 'planet', 'orbit', 'gravity', 'lightyear', 'quantum'
     ];
-        $randomWords = collect($words)->random(11)->values()->all();
+        $randomWords = collect($words)->random(12)->values()->all();
         $randomPhraseString = implode(' ', $randomWords);
         $secretPhraseHash = Crypt::encryptString($randomPhraseString);
         return $secretPhraseHash;
