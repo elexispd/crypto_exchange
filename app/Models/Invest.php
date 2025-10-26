@@ -16,7 +16,13 @@ class Invest extends Model
         'status'
     ];
 
-    public function investmentPlan() {
+    public function investmentPlan()
+    {
         return $this->belongsTo(InvestmentPlan::class, 'investment_plan_id');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }

@@ -9,6 +9,7 @@ use App\Http\Controllers\KycController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WalletController;
 use App\Http\Controllers\DepositController;
+use App\Http\Controllers\InvestmentController;
 use App\Http\Controllers\InvestmentPlanController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\WithdrawController;
@@ -86,6 +87,8 @@ Route::middleware(['web', 'auth'])->group(function () {
         Route::post('/update', 'update')->name('admin.plan.update');
         Route::post('/change-status', 'changeStatus')->name('admin.plan.changeStatus');
     });
+
+    Route::get('investments', [InvestmentController::class, 'index'])->name('admin.investment.index');
 
 
 

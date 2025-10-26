@@ -145,7 +145,7 @@
 
             <li class="nav-item">
                 <a class="nav-link collapsed" data-bs-target="#investment_plans" data-bs-toggle="collapse" href="#">
-                    <i class="bi bi-currency-exchange"></i><span>Investment Plans</span><i class="bi bi-chevron-down ms-auto"></i>
+                    <i class="bi bi-asterisk"></i><span>Investment Plans</span><i class="bi bi-chevron-down ms-auto"></i>
                 </a>
                 <ul id="investment_plans" class="nav-content collapse " data-bs-parent="#sidebar-nav">
 
@@ -161,6 +161,30 @@
                         </a>
                     </li>
 
+                </ul>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link collapsed" data-bs-target="#investment" data-bs-toggle="collapse" href="#">
+                    <i class="bi bi-bar-chart-fill"></i><span>Investments</span><i class="bi bi-chevron-down ms-auto"></i>
+                </a>
+                <ul id="investment" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+                    <li>
+                        <a href="{{ route('admin.investment.index', ['status' => 'active']) }}">
+                            <i class="bi bi-circle"></i><span>On-going Investments</span>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="{{ route('admin.investment.index', ['status' => 'completed']) }}">
+                            <i class="bi bi-circle"></i><span>Completed Investments</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('admin.investment.index') }}">
+                            <i class="bi bi-circle"></i><span>All Investments</span>
+                        </a>
+                    </li>
                 </ul>
             </li>
 

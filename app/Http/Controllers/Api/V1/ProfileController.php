@@ -24,7 +24,7 @@ class ProfileController extends Controller
             'message' => 'Profile retrieved successfully',
             'data'    => [
                 'user' => $user->only(['id', 'name', 'email', 'phone', 'address', 'city', 'state', 'zip', 'country']),
-                'wallet' => $user->wallet->except(['secret_phrase']),
+                'wallet' => $user->wallet,
             ],
         ]);
     }
