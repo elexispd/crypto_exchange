@@ -8,9 +8,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use App\Services\CoinGeckoService;
+use App\Traits\Assets;
 
 class CryptoApiController extends Controller
 {
+    use Assets;
 
     protected $coinGecko;
 
@@ -106,6 +108,14 @@ class CryptoApiController extends Controller
             'status'  => true,
             'message' => 'Coins successfully retrieved',
             'data'  => $formatted,
+        ]);
+    }
+
+    public function allAssets() {
+        return response()->json([
+            'status'  => true,
+            'message' => 'Assets successfully retrieved',
+            'data'  => $this->getAllAssets(),
         ]);
     }
 }

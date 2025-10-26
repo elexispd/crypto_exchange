@@ -44,6 +44,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/crypto/price/{id}', [CryptoApiController::class, 'price']);
         Route::get('/crypto/market', [CryptoApiController::class, 'market']);
         Route::get('/crypto/coins', [CryptoApiController::class, 'coins']);
+        Route::get('/crypto/assets', [CryptoApiController::class, 'allAssets']);
 
 
         Route::get('/transactions', [TransactionController::class, 'index']);
@@ -71,6 +72,9 @@ Route::prefix('v1')->group(function () {
         Route::post('/investments', [InvestController::class, 'store']);
         Route::get('/investments', [InvestController::class, 'index']);
         Route::get('/investments/{invest}', [InvestController::class, 'show']);
+
+        Route::get('/investment-plans', [InvestController::class, 'getInvestmentPlans']);
+        Route::get('/investment-plans/{plan}', [InvestController::class, 'getInvestmentPlan']);
 
 
 

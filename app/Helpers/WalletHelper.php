@@ -38,4 +38,30 @@ class WalletHelper
 
         return $wallet->{$map[$currency]} ?? null;
     }
+
+    public static function getWalletBalance(?Wallet $wallet, string $currency): ?float
+    {
+        if (! $wallet) {
+            return null;
+        }
+
+        $map = [
+            'btc' => 'btc_balance',
+            'eth' => 'eth_balance',
+            'xrp' => 'xrp_balance',
+            'sol' => 'solana_balance',
+            'gold' => 'good_balance',
+            'sp500' => 'sp500_balance',
+            'nasdaq' => 'nasdaq_balance',
+            'oil' => 'oil_balance',
+        ];
+
+        $currency = strtolower($currency);
+
+        if (! isset($map[$currency]) || ! $map[$currency]) {
+            return null;
+        }
+
+        return $wallet->{$map[$currency]} ?? null;
+    }
 }
