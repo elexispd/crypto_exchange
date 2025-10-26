@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\V1\CryptoApiController;
 use App\Http\Controllers\Api\V1\DepositController;
 use App\Http\Controllers\Api\V1\InvestController;
 use App\Http\Controllers\Api\V1\KycDocumentController;
+use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\TransactionController;
 use App\Http\Controllers\Api\V1\WalletController;
 use App\Http\Controllers\Api\V1\WithdrawController;
@@ -32,6 +33,8 @@ Route::prefix('v1')->group(function () {
         Route::post('/verify-pin', [AuthController::class, 'verifyPin']);
         Route::post('/create-pin', [AuthController::class, 'createPin']);
         Route::post('/logout', [AuthController::class, 'logout']);
+
+        Route::get('/profile', [ProfileController::class, 'show']);
 
         Route::apiResource('kyc', KycDocumentController::class)->only(['index', 'store', 'show']);
         Route::post('/kyc/{kyc}', [KycDocumentController::class, 'update'])->name('kyc.update');

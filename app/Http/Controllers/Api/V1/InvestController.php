@@ -45,6 +45,22 @@ class InvestController extends Controller
         $user = $request->user();
         $wallet = $user->wallet;
 
+        $plan = InvestmentPlan::where('id', $validated['plan_id'])->first();
+
+        if($validated["amount"] < $plan->min_amount) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'Minimum investment amount not met.',
+            ], 422);
+        }
+
+        if($validated['amount'] < 0.00000001) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'Invalid amount provided.',
+            ], 422);
+        }
+
         $walletBalance = WalletHelper::getWalletBalance($wallet, $inputSymbol);
 
         if ($walletBalance < $validated['amount']) {
