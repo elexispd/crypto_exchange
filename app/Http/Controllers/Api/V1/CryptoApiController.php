@@ -74,7 +74,6 @@ class CryptoApiController extends Controller
         // Cryptocurrency data
         $cryptoIds = ['bitcoin', 'ethereum', 'ripple', 'solana'];
         $cryptoData = $this->coinGecko->getSelectedMarketData($cryptoIds, 'usd');
-
         $wallet = auth()->user()->wallet;
 
         $coins = collect($cryptoData)->mapWithKeys(function ($coin) use ($wallet) {

@@ -30,10 +30,13 @@ class DepositController extends Controller
             'action' => 'required|in:approve,reject',
         ]);
 
+        $amount = $deposit->amount;
+
         if ($request->action === 'approve') {
             $deposit->update([
-                'status' => 'approved'
+                'status' => 'approved',
             ]);
+            $deposit->user->wallet->incrementBalance($deposit->currency, $amount);
         } else {
             $deposit->update([
                 'status' => 'rejected'
