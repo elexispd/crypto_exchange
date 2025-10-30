@@ -4,6 +4,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Illuminate\Console\Scheduling\Schedule;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -41,4 +42,16 @@ return Application::configure(basePath: dirname(__DIR__))
                 ], 500);
             }
         });
-    })->create();
+    })
+     ->withSchedule(function (Schedule $schedule) {
+        // Add this line for daily profit calculation
+        $schedule->command('investments:calculate-profits')->dailyAt('00:00');
+
+        // You can add other scheduled tasks here too
+        // $schedule->command('some:other-command')->hourly();
+    })
+    ->withCommands([
+        // Register your custom commands here
+        \App\Console\Commands\CalculateInvestmentProfits::class,
+    ])
+    ->create();

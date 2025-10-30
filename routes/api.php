@@ -76,6 +76,7 @@ Route::prefix('v1')->group(function () {
         Route::post('/investments', [InvestController::class, 'store']);
         Route::get('/investments', [InvestController::class, 'index']);
         Route::get('/investments/{invest}', [InvestController::class, 'show']);
+        Route::post('/investments/{invest}/redeem', [InvestController::class, 'redeem']);
 
         Route::get('/investment-plans', [InvestController::class, 'getInvestmentPlans']);
         Route::get('/investment-plans/{plan}', [InvestController::class, 'getInvestmentPlan']);
