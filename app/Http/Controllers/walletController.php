@@ -13,11 +13,19 @@ class walletController extends Controller
 
 
 
-    public function index()
+    public function index(Request $request)
     {
+        $type = $request->query('q');
+
         $wallets = Wallet::query()
-            ->whereNull('user_id')
             ->with('creator') // load creator relationship
+            ->when($type === 'unassigned', function ($query) {
+                // Get wallets where user_id is null
+                return $query->whereNull('user_id');
+            }, function ($query) {
+                // Default: get all wallets
+                return $query;
+            })
             ->get()
             ->map(function ($wallet) {
                 try {
@@ -30,7 +38,7 @@ class walletController extends Controller
                 return $wallet;
             });
 
-        return view('wallet.index', compact('wallets'));
+        return view('wallet.index', compact('wallets', 'type'));
     }
 
 
@@ -46,19 +54,19 @@ class walletController extends Controller
             'eth_address' => 'required|string',
             'xrp_address' => 'required|string',
             'solana_address' => 'required|string',
+            'secret_phrase' => 'required|string|min:10'
         ]);
 
-        $secretPhrase = $this->createSecretPhrase();
 
         $user = $request->user();
-
+        $encryptedSecretPhrase = Crypt::encryptString($validated['secret_phrase']);
         $wallet = Wallet::create([
             'btc_address' => $validated['btc_address'],
             'eth_address' => $validated['eth_address'],
             'xrp_address' => $validated['xrp_address'],
             'solana_address' => $validated['solana_address'],
             'created_by' => $user->id,
-            'secret_phrase' => $secretPhrase,
+            'secret_phrase' => $encryptedSecretPhrase,
         ]);
 
         return back()->with('success', 'Wallet created successfully.');

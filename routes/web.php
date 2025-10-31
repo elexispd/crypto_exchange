@@ -12,6 +12,7 @@ use App\Http\Controllers\DepositController;
 use App\Http\Controllers\InvestmentController;
 use App\Http\Controllers\InvestmentPlanController;
 use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\TransactionFeeController;
 use App\Http\Controllers\WithdrawController;
 use Illuminate\Support\Facades\Mail;
 
@@ -36,8 +37,6 @@ Route::middleware(['web', 'auth'])->group(function () {
         Route::get('/{user}', 'show')->name('users.show');
         Route::put('/{user}/update', 'update')->name('users.update');
         Route::delete('/{user}/delete', 'destroy')->name('users.destroy');
-
-
     });
 
     Route::controller(KycController::class)->prefix('kyc')->group(function () {
@@ -47,13 +46,13 @@ Route::middleware(['web', 'auth'])->group(function () {
     });
 
     Route::prefix('admin/wallet/')->controller(AdminWalletController::class)
-    ->name('admin.walletmethod.')
-    ->group(function () {
-        Route::get('create', 'create')->name('create');
-        Route::get('', 'index')->name('index');
-        Route::post('store', 'store')->name('store');
-        Route::put('{wallet}', 'updateStatus')->name('updateStatus');
-    });
+        ->name('admin.walletmethod.')
+        ->group(function () {
+            Route::get('create', 'create')->name('create');
+            Route::get('', 'index')->name('index');
+            Route::post('store', 'store')->name('store');
+            Route::put('{wallet}', 'updateStatus')->name('updateStatus');
+        });
 
     Route::controller(WalletController::class)->prefix('wallet')->group(function () {
         Route::get('/', [WalletController::class, 'index'])->name('admin.wallet.index');
@@ -74,8 +73,12 @@ Route::middleware(['web', 'auth'])->group(function () {
 
     Route::controller(TransactionController::class)->prefix('transaction')->group(function () {
         Route::get('/', 'index')->name('admin.transaction.index');
-        Route::get('/create-fee', 'fees')->name('admin.transaction.fees');
-        Route::post('/create-fee', 'storeFee')->name('admin.transaction.storeFee');
+    });
+
+    Route::controller(TransactionFeeController::class)->prefix('transaction-fee')->group(function () {
+        Route::get('/create-fee', 'create')->name('admin.transaction.create'); // ✅ Correct method name
+        Route::post('/create-fee', 'store')->name('admin.transaction.storeFee'); // ✅ Correct method name
+        Route::delete('/{fee}', 'destroy')->name('admin.transaction.destroyFee');
     });
 
     Route::controller(InvestmentPlanController::class)->prefix('investment-plans')->group(function () {
@@ -87,11 +90,6 @@ Route::middleware(['web', 'auth'])->group(function () {
     });
 
     Route::get('investments', [InvestmentController::class, 'index'])->name('admin.investment.index');
-
-
-
-
-
 });
 
 require __DIR__ . '/auth.php';

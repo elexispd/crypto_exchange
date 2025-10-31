@@ -17,14 +17,18 @@
             <div class="col-lg-12">
                 <div class="card">
                     <div class="card-body">
-                        <h6 class="card-title"> These are unused wallets. You can add new wallets from the <a
+                        @if ($type)
+                            <h6 class="card-title"> These are unused wallets. You can add new wallets from the <a
                                 href="{{ route('admin.wallet.create') }}">Create Wallet</a> page.</h6>
+                        @endif
+
                         <x-alerts/>
                         <!-- Table with stripped rows -->
                         <table class="table datatable">
                             <thead>
                                 <tr>
                                     <th>S/N</th>
+                                    <th>User</th>
                                     <th>
                                         Bitcoin
                                     </th>
@@ -36,6 +40,7 @@
                                 @foreach ($wallets as $wallet)
                                     <tr>
                                         <td>{{ $loop->iteration }}</td>
+                                        <td>{{ $wallet->user->name ?? 'N/A'}}</td>
                                         <td>{{ $wallet->btc_address }}</td>
                                         <td>{{ $wallet->eth_address }}</td>
                                         <td>

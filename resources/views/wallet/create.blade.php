@@ -84,6 +84,17 @@
                                 @enderror
                             </div>
 
+                            <div class="col-md-12 mt-3">
+                                <label for="secret_phrase" class="form-label">Secret Phrase</label>
+                                <textarea name="secret_phrase" class="form-control @error('secret_phrase') is-invalid @enderror" id="secret_phrase"
+                                    rows="3" placeholder="Enter your 12-word secret phrase" required>{{ old('secret_phrase') }}</textarea>
+                                @error('secret_phrase')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                                <small class="form-text text-danger">Enter your 12-word recovery phrase separated by
+                                    spaces</small>
+                            </div>
+
                             <div class="text-center mt-3">
                                 <button type="submit" class="btn btn-primary">Add</button>
                                 <button type="reset" class="btn btn-secondary">Reset</button>

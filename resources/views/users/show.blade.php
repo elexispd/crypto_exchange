@@ -380,7 +380,8 @@
         </div>
     </div>
 
-    <!-- Reject Modal -->
+ @if ($user->latestKyc)
+     <!-- Reject Modal -->
     <div class="modal fade" id="rejectModal{{ $kyc->id }}" tabindex="-1"
         aria-labelledby="rejectModalLabel{{ $kyc->id }}" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -415,6 +416,9 @@
             </div>
         </div>
     </div>
+ @endif
+
+
 
 
 

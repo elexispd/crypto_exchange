@@ -28,7 +28,7 @@
                 </ul>
             </li>
 
-            <li class="nav-item">
+            {{-- <li class="nav-item">
                 <a class="nav-link collapsed" data-bs-target="#admin-wallet" data-bs-toggle="collapse" href="#">
                     <i class="bi bi-wallet"></i><span>Wallets</span><i class="bi bi-chevron-down ms-auto"></i>
                 </a>
@@ -44,7 +44,7 @@
                         </a>
                     </li>
                 </ul>
-            </li>
+            </li> --}}
 
             <li class="nav-item">
                 <a class="nav-link collapsed" data-bs-target="#wallet" data-bs-toggle="collapse" href="#">
@@ -54,6 +54,11 @@
                     <li>
                         <a href="{{ route('admin.wallet.create') }}">
                             <i class="bi bi-circle"></i><span>Create Wallet</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('admin.wallet.index', ['q' => 'unassigned']) }}">
+                            <i class="bi bi-circle"></i><span>Unassigned Wallets</span>
                         </a>
                     </li>
                     <li>
@@ -131,7 +136,7 @@
                         </a>
                     </li>
                     <li>
-                        <a href="{{ route('admin.transaction.fees') }}">
+                        <a href="{{ route('admin.transaction.create') }}">
                             <i class="bi bi-circle"></i><span>Transaction Fee</span>
                         </a>
                     </li>

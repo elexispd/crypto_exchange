@@ -28,6 +28,10 @@ class CoinGeckoService
         'oil'    => 'crude-oil',       // may not exist in CoinGecko
     ];
 
+    public function getCoinList() {
+        return $this->symbolMap;
+    }
+
     public function mapSymbolToId(string $symbol): ?string
     {
         $symbol = strtolower($symbol);
