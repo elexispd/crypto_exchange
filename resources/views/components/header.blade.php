@@ -3,7 +3,7 @@
         <div class="d-flex align-items-center justify-content-between">
             <a href="{{ route('dashboard') }}" class="logo d-flex align-items-center">
                <x-logo width="45px" />
-                <span class="d-none d-lg-block">Project87</span>
+                <span class="d-none d-lg-block">QFX</span>
             </a>
             <i class="bi bi-list toggle-sidebar-btn"></i>
         </div><!-- End Logo -->

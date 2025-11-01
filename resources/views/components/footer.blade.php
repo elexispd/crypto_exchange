@@ -3,7 +3,7 @@
             &copy; Copyright <strong><span><?= date('Y') ?></span></strong>. All Rights Reserved
         </div>
         <div class="credits">
-            Designed by Project87
+            Designed by QFX
         </div>
     </footer><!-- End Footer -->
 

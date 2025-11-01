@@ -14,21 +14,36 @@ class CoinGeckoService
     }
 
     protected $symbolMap = [
-        'btc'    => 'bitcoin',
-        'eth'    => 'ethereum',
-        'xrp'    => 'ripple',
-        'sol'    => 'solana',
-        'bitcoin' => 'bitcoin',
-        'ethereum' => 'ethereum',
-        'ripple' => 'xrp',
-        'solana' => 'sol',
-        'gold'   => 'tether-gold',     // example
-        'sp500'  => 's-p-500',         // if you track synthetic assets, you may need another API
-        'nasdaq' => 'nasdaq-100',      // same here
-        'oil'    => 'crude-oil',       // may not exist in CoinGecko
+        'btc'    => 'Bitcoin',
+        'eth'    => 'Ethereum',
+        'xrp'    => 'Ripple',
+        'sol'    => 'Solana',
+        'bitcoin' => 'Bitcoin',
+        'ethereum' => 'Ethereum',
+        'ripple' => 'Xrp',
+        'solana' => 'Sol',
+        'gold'   => 'Tether-gold',     // example
+        'sp500'  => 'S-P-500',         // if you track synthetic assets, you may need another API
+        'nasdaq' => 'Nasdaq-100',      // same here
+        'oil'    => 'Crude-oil',       // may not exist in CoinGecko
     ];
 
-    public function getCoinList() {
+    public function getCoinListSingle()
+    {
+        return [
+            'btc'    => 'Bitcoin',
+            'eth'    => 'Ethereum',
+            'xrp'    => 'Ripple',
+            'sol'    => 'Solana',
+            'gold'   => 'Tether-gold',     // example
+            'sp500'  => 'S-P-500',         // if you track synthetic assets, you may need another API
+            'nasdaq' => 'Nasdaq-100',      // same here
+            'oil'    => 'Crude-oil',
+        ];
+    }
+
+    public function getCoinList()
+    {
         return $this->symbolMap;
     }
 
@@ -36,6 +51,22 @@ class CoinGeckoService
     {
         $symbol = strtolower($symbol);
         return $this->symbolMap[$symbol] ?? null;
+    }
+
+    public function getNetworkIcon($network)
+    {
+        $icons = [
+            'btc' => 'fab fa-bitcoin text-warning',
+            'eth' => 'fab fa-ethereum text-primary',
+            'xrp' => 'fas fa-circle text-info',
+            'sol' => 'fas fa-sun text-warning',
+            'gold' => 'fas fa-gem text-warning',
+            'oil' => 'fas fa-gas-pump text-dark',
+            'sp500' => 'fas fa-chart-line text-success',
+            'nasdaq' => 'fas fa-chart-bar text-info',
+        ];
+
+        return $icons[$network] ?? 'fas fa-coins text-secondary';
     }
 
     /**
@@ -88,20 +119,4 @@ class CoinGeckoService
             return $response->json();
         });
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 }

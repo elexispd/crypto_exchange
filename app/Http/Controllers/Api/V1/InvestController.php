@@ -112,7 +112,6 @@ class InvestController extends Controller
                     'invested_at' => $investment->invested_at
                 ]
             ]);
-
         } catch (\Exception $e) {
             // Rollback the transaction if any error occurs
             DB::rollBack();
@@ -167,9 +166,12 @@ class InvestController extends Controller
     }
 
 
-    public function getInvestmentPlans()
+    public function getInvestmentPlans($network)
     {
-        $plans = InvestmentPlan::where('status', true)->get(['id', 'name', 'min_amount', 'interest_rate']);
+        $plans = InvestmentPlan::where('status', true)
+            ->where('network', $network) // assuming you have a 'network' column
+            ->get(['id', 'name', 'min_amount', 'interest_rate']);
+
         return response()->json([
             'status'  => true,
             'message' => 'Investment plans retrieved successfully',
@@ -257,7 +259,6 @@ class InvestController extends Controller
                     'redeemed_at' => $investment->redeemed_at
                 ]
             ]);
-
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -267,7 +268,4 @@ class InvestController extends Controller
             ], 500);
         }
     }
-
-
-
 }

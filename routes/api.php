@@ -80,8 +80,9 @@ Route::prefix('v1')->group(function () {
         Route::get('/investments/{invest}', [InvestController::class, 'show']);
         Route::post('/investments/{invest}/redeem', [InvestController::class, 'redeem']);
 
-        Route::get('/investment-plans', [InvestController::class, 'getInvestmentPlans']);
-        Route::get('/investment-plans/{plan}', [InvestController::class, 'getInvestmentPlan']);
+        // Route::get('/investment-plans', [InvestController::class, 'getInvestmentPlans']);
+        Route::get('/investment-plans/{network}', [InvestController::class, 'getInvestmentPlans']);
+        Route::get('/investment-plans/{network}/{plan}', [InvestController::class, 'getInvestmentPlan']);
 
 
 

@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('investment_plans', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('name');
+            $table->string('network');
             $table->decimal('min_amount', 15, 2)->default(0.00);
             $table->decimal('interest_rate', 15, 2)->default(0.00);
             $table->boolean('status')->default(true);
