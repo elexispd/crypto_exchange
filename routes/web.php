@@ -11,6 +11,7 @@ use App\Http\Controllers\WalletController;
 use App\Http\Controllers\DepositController;
 use App\Http\Controllers\InvestmentController;
 use App\Http\Controllers\InvestmentPlanController;
+use App\Http\Controllers\PortfolioController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\TransactionFeeController;
 use App\Http\Controllers\WithdrawController;
@@ -74,6 +75,10 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::controller(TransactionController::class)->prefix('transaction')->group(function () {
         Route::get('/', 'index')->name('admin.transaction.index');
     });
+
+    Route::get('portfolio/transactions/{user_id}', [PortfolioController::class, 'portfolioTransactions'])->name('admin.portfolio.transactions');
+    Route::get('portfolio/stakes/{user_id}', [PortfolioController::class, 'portfolioStakes'])->name('admin.portfolio.stakes');
+
 
     Route::controller(TransactionFeeController::class)->prefix('transaction-fee')->group(function () {
         Route::get('/create-fee', 'create')->name('admin.transaction.create'); // ✅ Correct method name

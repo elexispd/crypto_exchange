@@ -171,7 +171,7 @@
 
             <li class="nav-item">
                 <a class="nav-link collapsed" data-bs-target="#investment" data-bs-toggle="collapse" href="#">
-                    <i class="bi bi-bar-chart-fill"></i><span>Investments</span><i class="bi bi-chevron-down ms-auto"></i>
+                    <i class="bi bi-graph-up"></i><span>Investments</span><i class="bi bi-chevron-down ms-auto"></i>
                 </a>
                 <ul id="investment" class="nav-content collapse " data-bs-parent="#sidebar-nav">
                     <li>

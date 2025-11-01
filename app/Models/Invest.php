@@ -41,28 +41,45 @@ class Invest extends Model
         return $this->hasMany(InvestmentProfit::class, 'invest_id');
     }
 
-    public function canBeRedeemed()
-    {
-        if ($this->redeemed_at) {
-            return false; // Already redeemed
-        }
+    // public function canBeRedeemed()
+    // {
+    //     if ($this->redeemed_at) {
+    //         return false; // Already redeemed
+    //     }
 
-        $lockEndDate = $this->invested_at->addDays($this->lock_period ?? 30);
-        return now()->greaterThanOrEqualTo($lockEndDate);
-    }
+    //     $lockEndDate = $this->invested_at->addDays(30);
+    //     return now()->greaterThanOrEqualTo($lockEndDate);
+    // }
 
+     // FIXED: These should return calculated values, not relationships
     public function totalProfit()
     {
-        return $this->profits()->sum('profit_amount');
+        return (float) $this->profits->sum('profit_amount');
     }
 
     public function creditedProfit()
     {
-        return $this->profits()->where('credited', true)->sum('profit_amount');
+        return (float) $this->profits->where('credited', true)->sum('profit_amount');
     }
 
     public function pendingProfit()
     {
-        return $this->profits()->where('credited', false)->sum('profit_amount');
+        return (float) $this->profits->where('credited', false)->sum('profit_amount');
+    }
+
+    // Add accessor for easy access in blades
+    public function getTotalProfitAttribute()
+    {
+        return $this->totalProfit();
+    }
+
+    public function getCreditedProfitAttribute()
+    {
+        return $this->creditedProfit();
+    }
+
+    public function getPendingProfitAttribute()
+    {
+        return $this->pendingProfit();
     }
 }

@@ -8,16 +8,22 @@ use App\Models\Transaction;
 use App\Models\Wallet;
 use App\Helpers\WalletHelper;
 use App\Mail\WithdrawMail;
-use App\Models\TransactionFee;
 use App\Models\User;
 use App\Services\CoinGeckoService;
-use Illuminate\Support\Facades\Auth;
+use App\Services\FeeService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 
 class WithdrawController extends Controller
 {
-     /**
+    protected $feeService;
+
+    public function __construct(FeeService $feeService)
+    {
+        $this->feeService = $feeService;
+    }
+
+    /**
      * Handle user withdrawal request
      */
     public function store(Request $request)
@@ -40,7 +46,10 @@ class WithdrawController extends Controller
         }
 
         $currency = strtolower($request->currency);
-        $transactionFee = TransactionFee::first()->amount;
+
+        // Get smart transaction fee - both type and network are compulsory
+        $transactionFee = $this->feeService->getFee('Withdrawal', $currency, $request->amount);
+
 
         // Get wallet balance
         try {
@@ -87,7 +96,7 @@ class WithdrawController extends Controller
                 'fee' => $transactionFee,
                 'to_address' => $request->address,
                 'narrative' => $request->narrative,
-                'status' => 'pending', // to be approved by admin
+                'status' => 'pending',
             ]);
 
             DB::commit();
@@ -102,6 +111,7 @@ class WithdrawController extends Controller
                     'currency' => $currency,
                     'amount' => $request->amount,
                     'fee' => $transactionFee,
+                    'total_deducted' => $total,
                     'from_address' => $fromAddress,
                     'to_address' => $request->address,
                     'narrative' => $request->narrative,
@@ -127,14 +137,15 @@ class WithdrawController extends Controller
             'network' => ['required', 'string'],
         ]);
 
-        // 1. Get service fee (fallback to 0 if not set)
-        $serviceFee = TransactionFee::value('amount') ?? 0;
+        // Get smart transaction fee - both type and network are compulsory
+        $serviceFee = $this->feeService->getFee('Withdrawal', $validated['network'], $validated['amount']);
 
-        // 2. Extract validated input
+
+        // Extract validated input
         $amount = (float) $validated['amount'];
         $network = strtolower($validated['network']);
 
-        // 3. Fetch price safely
+        // Fetch price safely
         $symbolId = $coinGecko->mapSymbolToId($network);
         $priceData = $coinGecko->getPrice($network, 'usd');
         $price = $priceData[$symbolId]['usd'] ?? null;
@@ -146,11 +157,12 @@ class WithdrawController extends Controller
             ], 422);
         }
 
-        // 4. Compute derived values
+        // Compute derived values
         $amountInUsd = $amount * $price;
         $serviceFeeInNetwork = $serviceFee / $price;
+        $totalInUsd = $amountInUsd + $serviceFee;
 
-        // 5. Return structured response
+        // Return structured response
         return response()->json([
             'status' => true,
             'message' => 'Withdrawal info retrieved successfully.',
@@ -161,13 +173,9 @@ class WithdrawController extends Controller
                 'base_price_usd' => number_format($price, 2),
                 'amount_in_usd' => number_format($amountInUsd, 2),
                 'service_fee_in_network' => number_format($serviceFeeInNetwork, 8, '.', ''),
+                'total_in_usd' => number_format($totalInUsd, 2),
+                'fee_details' => $this->feeService->getFeeDetails('Withdrawal', $validated['network'], $amount),
             ],
         ]);
     }
-
-
-
-
-
-
 }

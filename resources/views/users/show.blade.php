@@ -212,7 +212,8 @@
                                                         @if (strtolower($status) == 'pending')
                                                             <div class="d-flex gap-2">
                                                                 {{-- ✅ Approve Button --}}
-                                                                <form action="{{ route('admin.kyc.update', $kyc) }}" method="POST">
+                                                                <form action="{{ route('admin.kyc.update', $kyc) }}"
+                                                                    method="POST">
                                                                     @csrf
                                                                     @method('PUT')
                                                                     <input type="hidden" name="action" value="approve">
@@ -316,6 +317,17 @@
 
                             </div>
                         </div>
+                        <a href="{{ route('admin.portfolio.transactions', [$user->id]) }}"
+                            class="btn btn-primary btn-sm">
+                            <i class="bi bi-currency-exchange me-1"></i> Transactions
+                        </a>
+
+                        <a href="{{ route('admin.portfolio.stakes', [$user->id]) }}"
+                            class="btn btn-secondary btn-sm">
+                            <i class="bi bi-graph-up me-1"></i> Stakes
+                        </a>
+
+
                     </div>
                 </div>
             </div>
@@ -380,43 +392,44 @@
         </div>
     </div>
 
- @if ($user->latestKyc)
-     <!-- Reject Modal -->
-    <div class="modal fade" id="rejectModal{{ $kyc->id }}" tabindex="-1"
-        aria-labelledby="rejectModalLabel{{ $kyc->id }}" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 shadow">
-                <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title" id="rejectModalLabel{{ $kyc->id }}">
-                        <i class="bi bi-x-circle me-2"></i> Reject KYC
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
+    @if ($user->latestKyc)
+        <!-- Reject Modal -->
+        <div class="modal fade" id="rejectModal{{ $kyc->id }}" tabindex="-1"
+            aria-labelledby="rejectModalLabel{{ $kyc->id }}" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title" id="rejectModalLabel{{ $kyc->id }}">
+                            <i class="bi bi-x-circle me-2"></i> Reject KYC
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
 
-                <form action="{{ route('admin.kyc.update', $kyc) }}" method="POST">
-                    @csrf
-                    @method('PUT')
-                    <input type="hidden" name="action" value="reject">
+                    <form action="{{ route('admin.kyc.update', $kyc) }}" method="POST">
+                        @csrf
+                        @method('PUT')
+                        <input type="hidden" name="action" value="reject">
 
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label for="reason{{ $kyc->id }}" class="form-label">Rejection Reason</label>
-                            <textarea name="rejection_reason" id="reason{{ $kyc->id }}" class="form-control" rows="3" required
-                                placeholder="Enter reason for rejection..."></textarea>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label for="reason{{ $kyc->id }}" class="form-label">Rejection Reason</label>
+                                <textarea name="rejection_reason" id="reason{{ $kyc->id }}" class="form-control" rows="3" required
+                                    placeholder="Enter reason for rejection..."></textarea>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-danger">
-                            <i class="bi bi-x-circle me-1"></i> Reject
-                        </button>
-                    </div>
-                </form>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-secondary"
+                                data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-x-circle me-1"></i> Reject
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
-    </div>
- @endif
+    @endif
 
 
 

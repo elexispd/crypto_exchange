@@ -59,7 +59,9 @@ class User extends Authenticatable
         return $this->hasOne(KycDocument::class)->latestOfMany();
     }
 
-
+    public function invests() {
+        return $this->hasMany(Invest::class);
+    }
     public function wallet() {
         return $this->hasOne(Wallet::class);
     }

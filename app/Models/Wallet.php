@@ -39,6 +39,18 @@ class Wallet extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function transactions()
+    {
+        return $this->hasMany(Transaction::class);
+    }
+
+    public function stakes()
+    {
+        return $this->hasMany(Invest::class);
+    }
+
+
+
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
@@ -100,6 +112,8 @@ class Wallet extends Model
 
         $this->decrement($column, $amount);
     }
+
+
 
 
 }

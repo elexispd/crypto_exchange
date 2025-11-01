@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\V1\CryptoApiController;
 use App\Http\Controllers\Api\V1\DepositController;
 use App\Http\Controllers\Api\V1\InvestController;
 use App\Http\Controllers\Api\V1\KycDocumentController;
+use App\Http\Controllers\Api\V1\PortfolioController;
 use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\TransactionController;
 use App\Http\Controllers\Api\V1\WalletController;
@@ -65,6 +66,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/transactions/deposits/{transaction}', [TransactionController::class, 'show']);
         Route::get('/transactions/withdraws/{transaction}', [TransactionController::class, 'show']);
         Route::get('/transactions/swaps/{transaction}', [TransactionController::class, 'show']);
+
 
         Route::get('/cards', [CardController::class, 'show']);
         Route::post('/cards', [CardController::class, 'store']);

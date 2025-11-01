@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use App\Models\adminWallet;
 use App\Models\Transaction;
 use App\Models\Wallet;
 use App\Services\CoinGeckoService;
@@ -13,9 +12,16 @@ use App\Mail\DepositMail;
 use App\Mail\SwapMail;
 use App\Models\User;
 use Illuminate\Support\Facades\Mail;
+use App\Services\FeeService;
 
 class TransactionController extends Controller
 {
+    protected $feeService;
+
+    public function __construct(FeeService $feeService)
+    {
+        $this->feeService = $feeService;
+    }
 
     public function index(Request $request)
     {
@@ -58,7 +64,7 @@ class TransactionController extends Controller
     {
         $request->merge(['currency' => strtoupper($request->network)]);
         $user = $request->user();
-        $validated =$request->validate([
+        $validated = $request->validate([
             'wallet_id' => 'required|uuid|exists:wallets,id',
             'network'  => 'required|string|in:BTC,ETH,XRP,SOL,btc,eth,xrp,sol',
             'amount'    => 'required|numeric|min:0.00000001'
@@ -68,26 +74,33 @@ class TransactionController extends Controller
             ->where('user_id', $user->id)
             ->first();
 
-        $network = strtoupper($validated['network']);
+        $network = strtolower($validated['network']); // Use lowercase for fee service
 
         if (! $wallet) {
             return response()->json(['status' => false, 'message' => 'Invalid wallet'], 403);
         }
 
-        $admnWallet = adminWallet::query()
-                    ->where('network', $network)
-                    ->where('status', 'active')
-                    ->first();
-        if (! $admnWallet) {
-            return response()->json(['status' => false, 'message' => 'Payment wallet not found'], 403);
+        // Get deposit fee
+        $depositFee = $this->feeService->getFee('Deposit', $network, $validated['amount']);
+
+
+        // If there's a deposit fee, deduct it from the amount
+        $netAmount = $validated['amount'] - $depositFee;
+
+        if ($netAmount <= 0) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Deposit amount is less than the fee'
+            ], 400);
         }
 
         $transaction = Transaction::create([
             'user_id'   => $user->id,
             'wallet_id' => $wallet->id,
             'type'      => 'deposit',
-            'currency'  => $network,
-            'amount'    => $validated['amount'],
+            'currency'  => strtoupper($network),
+            'amount'    => $netAmount, // Store net amount after fee
+            'fee'       => $depositFee,
             'status'    => 'pending',
         ]);
 
@@ -97,46 +110,16 @@ class TransactionController extends Controller
             'status' => true,
             'message' => 'Deposit transaction created',
             'transaction' => $transaction,
-            'payment_wallet_address' => $admnWallet->address,
+            'fee_details' => [
+                'deposit_fee' => $depositFee,
+                'original_amount' => $validated['amount'],
+                'net_amount' => $netAmount,
+            ]
         ]);
     }
 
-    // Create a withdraw transaction
-    public function withdraw(Request $request)
-    {
-        $request->merge(['currency' => strtolower($request->currency)]);
 
-        $request->validate([
-            'wallet_id' => 'required|uuid|exists:wallets,id',
-            'currency'  => 'required|string|in:btc,eth,xrp,sol',
-            'amount'    => 'required|numeric|min:0.00000001',
-            'to_address' => 'required|string',
-        ]);
-
-        $wallet = Wallet::where('id', $request->wallet_id)
-            ->where('user_id', $request->user()->id)
-            ->first();
-
-        if (! $wallet) {
-            return response()->json(['status' => false, 'message' => 'Invalid wallet'], 403);
-        }
-
-        $transaction = Transaction::create([
-            'user_id'   => $request->user()->id,
-            'wallet_id' => $wallet->id,
-            'type'      => 'withdraw',
-            'currency'  => strtoupper($request->currency),
-            'amount'    => $request->amount,
-            'status'    => 'pending',
-        ]);
-
-        return response()->json([
-            'status' => true,
-            'message' => 'Withdrawal transaction created',
-            'transaction' => $transaction,
-        ]);
-    }
-
+    // Create a swap transaction
     // Create a swap transaction
     public function swap(Request $request, CoinGeckoService $coinGecko)
     {
@@ -160,10 +143,18 @@ class TransactionController extends Controller
             return response()->json(['status' => false, 'message' => 'Invalid wallet'], 403);
         }
 
-        // Check wallet balance
+        // Get swap fee
+        $swapFee = $this->feeService->getFee('Swap', $request->from_currency, $request->from_amount);
+        // Calculate total amount to deduct (original amount + fee)
+        $totalDeductAmount = $request->from_amount + $swapFee;
+
+        // Check wallet balance including the fee
         $fromBalance = $wallet->getBalance($request->from_currency);
-        if ($fromBalance < $request->from_amount) {
-            return response()->json(['status' => false, 'message' => 'Insufficient balance'], 400);
+        if ($fromBalance < $totalDeductAmount) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Insufficient balance to cover swap amount and fee'
+            ], 400);
         }
 
         // ✅ Map to CoinGecko IDs
@@ -184,12 +175,14 @@ class TransactionController extends Controller
         $fromPriceUsd = $prices[$fromId]['usd'];
         $toPriceUsd   = $prices[$toId]['usd'];
 
-        // Calculate conversion
+        // Calculate conversion using the original from_amount (before fee)
         $toAmount = ($request->from_amount * $fromPriceUsd) / $toPriceUsd;
 
         // ✅ Update balances (wrap in DB transaction for safety)
-        DB::transaction(function () use ($wallet, $request, $toAmount) {
-            $wallet->decrementBalance($request->from_currency, $request->from_amount);
+        DB::transaction(function () use ($wallet, $request, $toAmount, $swapFee, $totalDeductAmount) {
+            // Deduct the original amount + fee
+            $wallet->decrementBalance($request->from_currency, $totalDeductAmount);
+            // Credit the converted amount
             $wallet->incrementBalance($request->to_currency, $toAmount);
         });
 
@@ -201,6 +194,7 @@ class TransactionController extends Controller
             'to_currency'   => strtoupper($request->to_currency),
             'from_amount'   => $request->from_amount,
             'to_amount'     => $toAmount,
+            'fee'           => $swapFee,
             'status'        => 'completed',
         ]);
 
@@ -210,6 +204,11 @@ class TransactionController extends Controller
             'status' => true,
             'message' => 'Swap successful',
             'transaction' => $transaction,
+            'fee_details' => [
+                'swap_fee' => $swapFee,
+                'total_deducted' => $totalDeductAmount,
+                'net_converted_amount' => $toAmount,
+            ]
         ]);
     }
 
@@ -273,18 +272,39 @@ class TransactionController extends Controller
 
 
 
+    // Create a withdraw transaction
+    public function withdraw(Request $request)
+    {
+        $request->merge(['currency' => strtolower($request->currency)]);
 
+        $request->validate([
+            'wallet_id' => 'required|uuid|exists:wallets,id',
+            'currency'  => 'required|string|in:btc,eth,xrp,sol',
+            'amount'    => 'required|numeric|min:0.00000001',
+            'to_address' => 'required|string',
+        ]);
 
+        $wallet = Wallet::where('id', $request->wallet_id)
+            ->where('user_id', $request->user()->id)
+            ->first();
 
+        if (! $wallet) {
+            return response()->json(['status' => false, 'message' => 'Invalid wallet'], 403);
+        }
 
+        $transaction = Transaction::create([
+            'user_id'   => $request->user()->id,
+            'wallet_id' => $wallet->id,
+            'type'      => 'withdraw',
+            'currency'  => strtoupper($request->currency),
+            'amount'    => $request->amount,
+            'status'    => 'pending',
+        ]);
 
-
-
-
-
-
-
-
-
-
+        return response()->json([
+            'status' => true,
+            'message' => 'Withdrawal transaction created',
+            'transaction' => $transaction,
+        ]);
+    }
 }
