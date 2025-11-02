@@ -41,15 +41,15 @@ class Invest extends Model
         return $this->hasMany(InvestmentProfit::class, 'invest_id');
     }
 
-    // public function canBeRedeemed()
-    // {
-    //     if ($this->redeemed_at) {
-    //         return false; // Already redeemed
-    //     }
+    public function canBeRedeemed()
+    {
+        if ($this->redeemed_at) {
+            return false; // Already redeemed
+        }
 
-    //     $lockEndDate = $this->invested_at->addDays(30);
-    //     return now()->greaterThanOrEqualTo($lockEndDate);
-    // }
+        $lockEndDate = $this->invested_at->addDays(30);
+        return now()->greaterThanOrEqualTo($lockEndDate);
+    }
 
      // FIXED: These should return calculated values, not relationships
     public function totalProfit()

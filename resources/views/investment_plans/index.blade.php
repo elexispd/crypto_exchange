@@ -81,7 +81,7 @@
                                     </td>
                                     <td>
                                         {{ number_format($plan->min_amount, 8) }}
-                                        <small class="text-muted">USD</small>
+
                                     </td>
                                     <td>
                                         <span class="badge bg-success">

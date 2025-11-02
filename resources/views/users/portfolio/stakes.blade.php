@@ -25,7 +25,7 @@
                                 <i class="bi bi-graph-up"></i>
                             </div>
                             <div class="ps-3">
-                                <h6>${{ number_format($stakes->sum('totalProfit'), 2) }}</h6>
+                                <h6>${{ number_format($stakes->sum('totalProfit'), 8) }}</h6>
                             </div>
                         </div>
                     </div>
@@ -73,7 +73,7 @@
                                 <i class="bi bi-clock"></i>
                             </div>
                             <div class="ps-3">
-                                <h6>${{ number_format($stakes->sum('pendingProfit'), 2) }}</h6>
+                                <h6>${{ number_format($stakes->sum('pendingProfit'), 8) }}</h6>
                             </div>
                         </div>
                     </div>
@@ -175,7 +175,7 @@
                                                 <span class="network-badge">{{ strtoupper($stake->network) }}</span>
                                             </td>
                                             <td>
-                                                <div class="fw-bold text-primary">${{ number_format($stake->amount, 2) }}
+                                                <div class="fw-bold text-primary">${{ number_format($stake->amount, 8) }}
                                                 </div>
                                             </td>
                                             <td>
@@ -211,17 +211,17 @@
                                                     <div class="d-flex justify-content-between">
                                                         <small>Total:</small>
                                                         <small
-                                                            class="fw-bold text-success">${{ number_format($stake->totalProfit(), 2) }}</small>
+                                                            class="fw-bold text-success">${{ number_format($stake->totalProfit(), 8) }}</small>
                                                     </div>
                                                     <div class="d-flex justify-content-between">
                                                         <small>Credited:</small>
                                                         <small
-                                                            class="text-primary">${{ number_format($stake->creditedProfit(), 2) }}</small>
+                                                            class="text-primary">${{ number_format($stake->creditedProfit(), 8) }}</small>
                                                     </div>
                                                     <div class="d-flex justify-content-between">
                                                         <small>Pending:</small>
                                                         <small
-                                                            class="text-warning">${{ number_format($stake->pendingProfit(), 2) }}</small>
+                                                            class="text-warning">${{ number_format($stake->pendingProfit(), 8) }}</small>
                                                     </div>
                                                 </div>
                                             </td>
@@ -450,7 +450,7 @@
                 <div class="row mt-3">
                     <div class="col-md-6">
                         <strong>Investment Amount:</strong>
-                        <p class="fw-bold text-primary">$${parseFloat(stakeData.amount).toFixed(2)}</p>
+                        <p class="fw-bold text-primary">$${parseFloat(stakeData.amount).toFixed(8)}</p>
                     </div>
                     <div class="col-md-6">
                         <strong>Lock Period:</strong>
@@ -512,7 +512,7 @@
                     profitsHtml += `
                         <tr>
                             <td>${profitDate}</td>
-                            <td class="text-success">+$${profitAmount.toFixed(2)}</td>
+                            <td class="text-success">+$${profitAmount.toFixed(8)}</td>
                             <td>
                                 <span class="badge ${profit.credited ? 'bg-success' : 'bg-warning'}">
                                     ${profit.credited ? 'Credited' : 'Pending'}
@@ -537,9 +537,9 @@
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h6>Profit History for Stake #${stakeId}</h6>
                     <div class="d-flex gap-2">
-                        <span class="badge bg-success">Total: $${totalProfit.toFixed(2)}</span>
-                        <span class="badge bg-primary">Credited: $${creditedProfit.toFixed(2)}</span>
-                        <span class="badge bg-warning">Pending: $${pendingProfit.toFixed(2)}</span>
+                        <span class="badge bg-success">Total: $${totalProfit.toFixed(8)}</span>
+                        <span class="badge bg-primary">Credited: $${creditedProfit.toFixed(8)}</span>
+                        <span class="badge bg-warning">Pending: $${pendingProfit.toFixed(8)}</span>
                     </div>
                 </div>
                 <div class="table-responsive">
@@ -561,15 +561,15 @@
                 <div class="mt-3 p-3 bg-light rounded">
                     <div class="row text-center">
                         <div class="col-4">
-                            <h6 class="text-success">$${totalProfit.toFixed(2)}</h6>
+                            <h6 class="text-success">$${totalProfit.toFixed(8)}</h6>
                             <small>Total Profit</small>
                         </div>
                         <div class="col-4">
-                            <h6 class="text-primary">$${creditedProfit.toFixed(2)}</h6>
+                            <h6 class="text-primary">$${creditedProfit.toFixed(8)}</h6>
                             <small>Credited Profit</small>
                         </div>
                         <div class="col-4">
-                            <h6 class="text-warning">$${pendingProfit.toFixed(2)}</h6>
+                            <h6 class="text-warning">$${pendingProfit.toFixed(8)}</h6>
                             <small>Pending Profit</small>
                         </div>
                     </div>

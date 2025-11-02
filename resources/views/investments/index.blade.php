@@ -37,10 +37,10 @@
                                         <td>{{ $loop->iteration }}</td>
                                         <td>{{ $investment->user->name }}</td>
                                         <td>{{ $investment->investmentPlan->name ?? 'N/A' }}</td>
-                                        <td>${{ number_format($investment->amount, 2) }}</td>
+                                        <td>${{ number_format($investment->amount, 8) }}</td>
                                         <td>
                                             @if($investment->investmentPlan)
-                                                ${{ number_format($investment->amount * ($investment->investmentPlan->interest_rate / 100), 2) }}
+                                                ${{ number_format($investment->amount * ($investment->investmentPlan->interest_rate / 100), 8) }}
                                             @else
                                                 N/A
                                             @endif
@@ -55,9 +55,9 @@
                                                 data-bs-target="#investmentModal"
                                                 data-user="{{ $investment->user->name }}"
                                                 data-plan="{{ $investment->investmentPlan->name ?? 'N/A' }}"
-                                                data-amount="${{ number_format($investment->amount, 2) }}"
+                                                data-amount="${{ number_format($investment->amount, 8) }}"
                                                 data-interest-rate="{{ $investment->investmentPlan->interest_rate ?? 0 }}%"
-                                                data-expected-return="${{ number_format($investment->amount * (($investment->investmentPlan->interest_rate ?? 0) / 100), 2) }}"
+                                                data-expected-return="${{ number_format($investment->amount * (($investment->investmentPlan->interest_rate ?? 0) / 100), 8) }}"
                                                 data-network="{{ $investment->network ?? 'N/A' }}"
                                                 data-status="{{ ucfirst($investment->status) }}"
                                                 data-date="{{ $investment->created_at->format('d M, Y h:i A') }}">

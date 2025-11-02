@@ -8,8 +8,10 @@ use App\Mail\InvestmentMail;
 use App\Models\Invest;
 use App\Models\InvestmentPlan;
 use App\Models\TransactionFee;
+use App\Services\CoinGeckoService;
 use Illuminate\Http\Request;
 use App\Traits\Assets;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 
@@ -179,13 +181,61 @@ class InvestController extends Controller
         ]);
     }
 
-    public function getInvestmentPlan(InvestmentPlan $plan)
+    public function getInvestmentPland(InvestmentPlan $plan)
     {
-
         return response()->json([
             'status'  => true,
             'message' => 'Investment plan retrieved successfully',
             'data'    => $plan->only(['id', 'name', 'min_amount', 'interest_rate']),
+        ]);
+    }
+
+    public function getInvestmentPlan(InvestmentPlan $plan, CoinGeckoService $coinGeckoService)
+    {
+        try {
+            // Get the cryptocurrency ID based on plan name or network
+            $cryptoId = $coinGeckoService->mapSymbolToId($plan->network);
+            $cryptoId = strtolower($cryptoId);
+
+            // Get price data
+            $priceData = $coinGeckoService->getPrice(strtolower($cryptoId));
+
+            // Get market data for icon
+            $marketData = $coinGeckoService->getSelectedMarketData([$cryptoId]);
+
+            // Get current authenticated user's wallet balance for this cryptocurrency
+            $user = Auth::user();
+            $wallet = $user->wallet; // Assuming user has one wallet
+
+            // Get the balance for this cryptocurrency
+            $userBalance = $wallet->getBalance($plan->network); // or use $cryptoId if mapping is different
+
+            // Calculate USD value: price * user's balance
+            $currentPrice = $priceData[$cryptoId]['usd'] ?? 0;
+            $balanceValue = $currentPrice * $userBalance;
+
+            $planData = $plan->only(['id', 'name', 'min_amount', 'interest_rate', 'network']);
+
+            // Add calculated balance, price, and icon information
+            $planData['balance'] = $balanceValue;
+            $planData['current_price'] = $currentPrice;
+            $planData['user_balance'] = $userBalance; // Include the actual crypto balance too
+            $planData['icon'] = $marketData[0]['image'] ?? null;
+            $planData['symbol'] = strtoupper($cryptoId);
+        } catch (\Exception $e) {
+            // If price fetch fails, still return plan data without price
+            $planData = $plan->only(['id', 'name', 'min_amount', 'interest_rate', 'network']);
+            $planData['balance'] = null;
+            $planData['current_price'] = null;
+            $planData['user_balance'] = null;
+            $planData['icon'] = null;
+            $planData['symbol'] = null;
+        }
+
+        return response()->json([
+            'status'  => true,
+            'message' => 'Investment plan retrieved successfully',
+            'data'    => $planData,
         ]);
     }
 

@@ -22,6 +22,17 @@
         font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
         font-size: 0.85em;
     }
+
+    .wallet-balance {
+        font-weight: 600;
+        color: #2ecc71;
+    }
+
+    .crypto-icon {
+        width: 24px;
+        height: 24px;
+        margin-right: 8px;
+    }
 </style>
 @section('content')
     <div class="pagetitle">
@@ -47,11 +58,6 @@
                         <div>
 
                             @can('is-admin')
-                                {{-- <a class="btn  btn-sm" href="#" style="background: #191970; color: #fff;">
-                                <i class="fas fa-money-check-alt"></i> Debit
-                            </a>
-                            <a class="btn  btn-sm" href="#" style="background: #191970; color: #fff;">
-                                <i class="fas fa-money-check-alt"></i> Credit </a> --}}
                                 <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editUserModal">
                                     <i class="bi bi-pen me-1"></i> Edit
                                 </button>
@@ -327,12 +333,150 @@
                             <i class="bi bi-graph-up me-1"></i> Stakes
                         </a>
 
+                        <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#walletInfoModal">
+                            <i class="bi bi-wallet2 me-1"></i> Wallet Info
+                        </button>
+
 
                     </div>
                 </div>
             </div>
         </div>
     </section>
+
+    <!-- Wallet Info Modal -->
+    <div class="modal fade" id="walletInfoModal" tabindex="-1" aria-labelledby="walletInfoModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="walletInfoModalLabel">
+                        <i class="bi bi-wallet2 me-2"></i> Wallet Information - {{ $user->name }}
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    @if($user->wallet)
+                        @php
+                            $wallet = $user->wallet;
+                            $cryptoAssets = [
+                                'btc' => ['name' => 'Bitcoin', 'icon' => '₿', 'balance_field' => 'btc_balance', 'address_field' => 'btc_address'],
+                                'eth' => ['name' => 'Ethereum', 'icon' => 'Ξ', 'balance_field' => 'eth_balance', 'address_field' => 'eth_address'],
+                                'xrp' => ['name' => 'XRP', 'icon' => 'XRP', 'balance_field' => 'xrp_balance', 'address_field' => 'xrp_address'],
+                                'solana' => ['name' => 'Solana', 'icon' => 'SOL', 'balance_field' => 'sol_balance', 'address_field' => 'solana_address'],
+                            ];
+
+                            $traditionalAssets = [
+                                'gold' => ['name' => 'Gold', 'icon' => '🥇', 'balance_field' => 'gold_balance'],
+                                'sp500' => ['name' => 'S&P 500', 'icon' => '📈', 'balance_field' => 'sp500_balance'],
+                                'nasdaq' => ['name' => 'NASDAQ', 'icon' => '💹', 'balance_field' => 'nasdaq_balance'],
+                                'oil' => ['name' => 'Oil', 'icon' => '🛢️', 'balance_field' => 'oil_balance'],
+                            ];
+                        @endphp
+
+                        <!-- Crypto Assets Section -->
+                        <div class="mb-4">
+                            <h6 class="fw-bold text-primary mb-3">
+                                <i class="bi bi-currency-bitcoin me-2"></i>Crypto Assets
+                            </h6>
+                            <div class="row g-3">
+                                @foreach($cryptoAssets as $key => $asset)
+                                    @if($wallet->{$asset['address_field']} || $wallet->{$asset['balance_field']})
+                                        <div class="col-md-6">
+                                            <div class="card border-0 shadow-sm h-100">
+                                                <div class="card-body">
+                                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                                        <div>
+                                                            <h6 class="fw-bold mb-1">
+                                                                <span class="me-2">{{ $asset['icon'] }}</span>
+                                                                {{ $asset['name'] }}
+                                                            </h6>
+                                                            @if($wallet->{$asset['balance_field']})
+                                                                <div class="wallet-balance">
+                                                                    {{ number_format($wallet->{$asset['balance_field']}, 8) }}
+                                                                </div>
+                                                            @else
+                                                                <div class="text-muted small">No balance</div>
+                                                            @endif
+                                                        </div>
+                                                    </div>
+                                                    @if($wallet->{$asset['address_field']})
+                                                        <div class="mt-2">
+                                                            <small class="text-muted d-block">Address:</small>
+                                                            <code class="text-monospace small text-break">
+                                                                {{ $wallet->{$asset['address_field']} }}
+                                                            </code>
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endif
+                                @endforeach
+                            </div>
+                        </div>
+
+                        <!-- Traditional Assets Section -->
+                        <div class="mb-4">
+                            <h6 class="fw-bold text-primary mb-3">
+                                <i class="bi bi-graph-up me-2"></i>Traditional Assets
+                            </h6>
+                            <div class="row g-3">
+                                @foreach($traditionalAssets as $key => $asset)
+                                    @if($wallet->{$asset['balance_field']})
+                                        <div class="col-md-6">
+                                            <div class="card border-0 shadow-sm h-100">
+                                                <div class="card-body">
+                                                    <div class="d-flex justify-content-between align-items-start">
+                                                        <div>
+                                                            <h6 class="fw-bold mb-1">
+                                                                <span class="me-2">{{ $asset['icon'] }}</span>
+                                                                {{ $asset['name'] }}
+                                                            </h6>
+                                                            <div class="wallet-balance">
+                                                                {{ number_format($wallet->{$asset['balance_field']}, 2) }}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endif
+                                @endforeach
+                            </div>
+                        </div>
+
+                        <!-- Secret Phrase (Admin Only) -->
+                        @can('is-admin')
+                            @if($wallet->secret_phrase)
+                                <div class="alert alert-warning">
+                                    <h6 class="fw-bold mb-2">
+                                        <i class="bi bi-shield-lock me-2"></i>Secret Phrase
+                                    </h6>
+                                    <code class="text-monospace small">
+                                        {{ Crypt::decryptString($wallet->secret_phrase) }}
+                                    </code>
+                                    <div class="mt-2 text-muted small">
+                                        <i class="bi bi-exclamation-triangle me-1"></i>
+                                        Keep this information secure and confidential
+                                    </div>
+                                </div>
+                            @endif
+                        @endcan
+
+                    @else
+                        <div class="alert alert-warning text-center py-4">
+                            <i class="bi bi-wallet-x display-4 d-block mb-3"></i>
+                            <h5>No Wallet Found</h5>
+                            <p class="mb-0">This user doesn't have a wallet associated with their account.</p>
+                        </div>
+                    @endif
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Edit User Modal -->
     <div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
@@ -430,9 +574,4 @@
             </div>
         </div>
     @endif
-
-
-
-
-
 @endsection
