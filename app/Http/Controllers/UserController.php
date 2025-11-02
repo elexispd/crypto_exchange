@@ -3,43 +3,96 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use App\Services\CoinGeckoService;
-use App\Services\TraditionalAssetService;
-use Illuminate\Support\Facades\Http;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\View\View;
 
 class UserController extends Controller
 {
-    protected $coinGeckoService;
-    protected $traditionalAssetService;
-
-    public function __construct(CoinGeckoService $coinGeckoService, TraditionalAssetService $traditionalAssetService)
+    public function index(): View
     {
-        $this->coinGeckoService = $coinGeckoService;
-        $this->traditionalAssetService = $traditionalAssetService;
+        $users = User::query()
+            ->where('is_admin', false)
+            ->latest()
+            ->select('id', 'name', 'email', 'country', 'status')
+            ->get();
+
+        return view('users.index', compact('users'));
     }
 
-    public function show($id)
+    public function create(): View
     {
-        $user = User::with('wallet')->findOrFail($id);
-
-        // Get crypto prices from CoinGecko
-        $cryptoPrices = $this->coinGeckoService->getPrices(['bitcoin', 'ethereum', 'ripple', 'solana']);
-
-        // Get traditional assets prices from Yahoo Finance (FREE - no API key)
-        $traditionalPrices = $this->traditionalAssetService->getAllTraditionalAssetsWithPrices();
-
-        return $traditionalPrices;
-
-        return view('users.show', compact('user', 'cryptoPrices', 'traditionalPrices'));
+        return view('users.create');
     }
 
-    /**
-     * Test route to check if Yahoo Finance is working
-     */
-    public function testYahoo()
+    public function show(User $user): View
     {
-        return $this->traditionalAssetService->testConnection();
+        return view('users.show', compact('user'));
     }
 
+    public function changeStatus(User $user)
+    {
+        $user->status = $user->status === 'active' ? 'inactive' : 'active';
+        $user->save();
+        return redirect()->route('users.show', $user);
+    }
 
+    public function store(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => "required|email|unique:users,email",
+            'username' => "required|string|unique:users,username",
+            'phone' => 'nullable|string|max:20|unique:users,phone',
+            'password' => 'required|string|min:6',
+            'country' => 'nullable|string|max:100',
+            'state' => 'nullable|string|max:100',
+        ]);
+
+        $user = User::create($request->only('name', 'email', 'phone', 'country', 'username', 'password', 'state'));
+        return redirect()->back()->with('success', 'User created successfully.');
+    }
+
+    public function update(Request $request, User $user)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => "required|email|unique:users,email,{$user->id}",
+            'phone' => 'nullable|string|max:20',
+            'country' => 'nullable|string|max:100',
+            'state' => 'nullable|string|max:100',
+        ]);
+
+        $user->update($request->only('name', 'email', 'phone', 'country', 'state'));
+
+        return redirect()->back()->with('success', 'User details updated successfully.');
+    }
+
+    public function showChangePassword()
+    {
+        return view('users.change-password');
+    }
+
+    public function changePassword(Request $request)
+    {
+        $request->validate([
+            'old_password' => 'required|string',
+            'new_password' => 'required|string|min:8',
+            'confirm_password' => 'required|string|min:8|same:new_password',
+        ]);
+
+        $user = Auth::user();
+
+        if (!Hash::check($request->old_password, $user->password)) {
+            return back()->withErrors(['old_password' => 'Old password is incorrect.']);
+        }
+
+        $user->update([
+            'password' => Hash::make($request->new_password),
+        ]);
+
+        return redirect()->back()->with('success', 'Password changed successfully.');
+    }
 }

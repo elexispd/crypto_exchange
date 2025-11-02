@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminWalletController;
+use App\Http\Controllers\CardController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -24,12 +25,6 @@ use Illuminate\Support\Facades\Mail;
 
 
 
-Route::get('/test-yahoo', function () {
-    $response = Http::withoutVerifying()->get('https://query1.finance.yahoo.com/v8/finance/chart/GC=F');
-    $data = $response->json();
-    dd($data['chart']['result'][0]['meta'] ?? 'missing');
-});
-
 Route::middleware(['web', 'auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
@@ -39,6 +34,7 @@ Route::middleware(['web', 'auth'])->group(function () {
         Route::post('/store', 'store')->name('users.store');
         Route::get('/change-password', 'showChangePassword')->name('users.changePasswordForm');
         Route::post('/change-password', 'changePassword')->name('users.changePassword');
+        Route::get('/card', 'showCard')->name('users.showCard');
         Route::put('/{user}/status', 'changeStatus')->name('users.changeStatus');
         Route::get('/{user}', 'show')->name('users.show');
         Route::put('/{user}/update', 'update')->name('users.update');
@@ -101,5 +97,20 @@ Route::middleware(['web', 'auth'])->group(function () {
 
     Route::get('investments', [InvestmentController::class, 'index'])->name('admin.investment.index');
 });
+Route::prefix('admin/cards')->group(function () {
+    Route::put('/{card}/toggle-freeze', [CardController::class, 'toggleFreeze'])
+        ->name('admin.cards.toggle-freeze');
 
+    Route::delete('/{card}', [CardController::class, 'destroy'])
+        ->name('admin.cards.delete');
+
+    Route::post('/{user}/create', [CardController::class, 'store'])
+        ->name('admin.cards.store');
+
+    Route::put('/{card}/balance', [CardController::class, 'updateBalance'])
+        ->name('admin.cards.update-balance');
+
+    Route::get('/{card}/transactions', [CardController::class, 'transactions'])
+        ->name('admin.cards.transactions');
+});
 require __DIR__ . '/auth.php';

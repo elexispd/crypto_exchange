@@ -328,13 +328,16 @@
                             <i class="bi bi-currency-exchange me-1"></i> Transactions
                         </a>
 
-                        <a href="{{ route('admin.portfolio.stakes', [$user->id]) }}"
-                            class="btn btn-secondary btn-sm">
+                        <a href="{{ route('admin.portfolio.stakes', [$user->id]) }}" class="btn btn-secondary btn-sm">
                             <i class="bi bi-graph-up me-1"></i> Stakes
                         </a>
 
                         <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#walletInfoModal">
                             <i class="bi bi-wallet2 me-1"></i> Wallet Info
+                        </button>
+
+                        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#cardModal">
+                            <i class="bi bi-wallet2 me-1"></i> Card
                         </button>
 
 
@@ -345,24 +348,46 @@
     </section>
 
     <!-- Wallet Info Modal -->
-    <div class="modal fade" id="walletInfoModal" tabindex="-1" aria-labelledby="walletInfoModalLabel" aria-hidden="true">
+    <div class="modal fade" id="walletInfoModal" tabindex="-1" aria-labelledby="walletInfoModalLabel"
+        aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header bg-primary text-white">
                     <h5 class="modal-title" id="walletInfoModalLabel">
                         <i class="bi bi-wallet2 me-2"></i> Wallet Information - {{ $user->name }}
                     </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    @if($user->wallet)
+                    @if ($user->wallet)
                         @php
                             $wallet = $user->wallet;
                             $cryptoAssets = [
-                                'btc' => ['name' => 'Bitcoin', 'icon' => '₿', 'balance_field' => 'btc_balance', 'address_field' => 'btc_address'],
-                                'eth' => ['name' => 'Ethereum', 'icon' => 'Ξ', 'balance_field' => 'eth_balance', 'address_field' => 'eth_address'],
-                                'xrp' => ['name' => 'XRP', 'icon' => 'XRP', 'balance_field' => 'xrp_balance', 'address_field' => 'xrp_address'],
-                                'solana' => ['name' => 'Solana', 'icon' => 'SOL', 'balance_field' => 'sol_balance', 'address_field' => 'solana_address'],
+                                'btc' => [
+                                    'name' => 'Bitcoin',
+                                    'icon' => '₿',
+                                    'balance_field' => 'btc_balance',
+                                    'address_field' => 'btc_address',
+                                ],
+                                'eth' => [
+                                    'name' => 'Ethereum',
+                                    'icon' => 'Ξ',
+                                    'balance_field' => 'eth_balance',
+                                    'address_field' => 'eth_address',
+                                ],
+                                'xrp' => [
+                                    'name' => 'XRP',
+                                    'icon' => 'XRP',
+                                    'balance_field' => 'xrp_balance',
+                                    'address_field' => 'xrp_address',
+                                ],
+                                'solana' => [
+                                    'name' => 'Solana',
+                                    'icon' => 'SOL',
+                                    'balance_field' => 'sol_balance',
+                                    'address_field' => 'solana_address',
+                                ],
                             ];
 
                             $traditionalAssets = [
@@ -379,8 +404,8 @@
                                 <i class="bi bi-currency-bitcoin me-2"></i>Crypto Assets
                             </h6>
                             <div class="row g-3">
-                                @foreach($cryptoAssets as $key => $asset)
-                                    @if($wallet->{$asset['address_field']} || $wallet->{$asset['balance_field']})
+                                @foreach ($cryptoAssets as $key => $asset)
+                                    @if ($wallet->{$asset['address_field']} || $wallet->{$asset['balance_field']})
                                         <div class="col-md-6">
                                             <div class="card border-0 shadow-sm h-100">
                                                 <div class="card-body">
@@ -390,7 +415,7 @@
                                                                 <span class="me-2">{{ $asset['icon'] }}</span>
                                                                 {{ $asset['name'] }}
                                                             </h6>
-                                                            @if($wallet->{$asset['balance_field']})
+                                                            @if ($wallet->{$asset['balance_field']})
                                                                 <div class="wallet-balance">
                                                                     {{ number_format($wallet->{$asset['balance_field']}, 8) }}
                                                                 </div>
@@ -399,7 +424,7 @@
                                                             @endif
                                                         </div>
                                                     </div>
-                                                    @if($wallet->{$asset['address_field']})
+                                                    @if ($wallet->{$asset['address_field']})
                                                         <div class="mt-2">
                                                             <small class="text-muted d-block">Address:</small>
                                                             <code class="text-monospace small text-break">
@@ -421,8 +446,8 @@
                                 <i class="bi bi-graph-up me-2"></i>Traditional Assets
                             </h6>
                             <div class="row g-3">
-                                @foreach($traditionalAssets as $key => $asset)
-                                    @if($wallet->{$asset['balance_field']})
+                                @foreach ($traditionalAssets as $key => $asset)
+                                    @if ($wallet->{$asset['balance_field']})
                                         <div class="col-md-6">
                                             <div class="card border-0 shadow-sm h-100">
                                                 <div class="card-body">
@@ -447,7 +472,7 @@
 
                         <!-- Secret Phrase (Admin Only) -->
                         @can('is-admin')
-                            @if($wallet->secret_phrase)
+                            @if ($wallet->secret_phrase)
                                 <div class="alert alert-warning">
                                     <h6 class="fw-bold mb-2">
                                         <i class="bi bi-shield-lock me-2"></i>Secret Phrase
@@ -462,7 +487,6 @@
                                 </div>
                             @endif
                         @endcan
-
                     @else
                         <div class="alert alert-warning text-center py-4">
                             <i class="bi bi-wallet-x display-4 d-block mb-3"></i>
@@ -535,6 +559,202 @@
             </div>
         </div>
     </div>
+
+    <!-- Card Modal -->
+    <div class="modal fade" id="cardModal" tabindex="-1" aria-labelledby="cardModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="cardModalLabel">
+                        <i class="bi bi-credit-card me-2"></i> Card Information - {{ $user->name }}
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    @if ($user->card && $user->card->count() > 0)
+                        @foreach ($user->card as $card)
+                            <div class="card mb-4 border-0 shadow-sm">
+                                <div class="card-body">
+                                    <!-- Card Preview -->
+                                    <div class="card-preview p-4 rounded-3 mb-3"
+                                        style="background: linear-gradient(135deg, #2c3e50, #4a6491); color: white;">
+                                        <div class="d-flex justify-content-between align-items-start mb-4">
+                                            <div class="card-chip"></div>
+                                            <div class="card-logo">VISA</div>
+                                        </div>
+                                        <div class="card-number mb-3">
+                                            **** **** **** {{ substr($card->card_number, -4) }}
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-end">
+                                            <div>
+                                                <div class="small">Card Holder</div>
+                                                <div class="fw-bold">{{ $card->card_name }}</div>
+                                            </div>
+                                            <div class="text-end">
+                                                <div class="small">Expires</div>
+                                                <div class="fw-bold">{{ $card->expiry_month }}/{{ $card->expiry_year }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Card Details -->
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <div class="info-section">
+                                                <div class="row mb-2">
+                                                    <div class="col-6 fw-bold text-muted">Card Number</div>
+                                                    <div class="col-6 text-monospace">{{ $card->card_number }}</div>
+                                                </div>
+                                                <div class="row mb-2">
+                                                    <div class="col-6 fw-bold text-muted">Card Name</div>
+                                                    <div class="col-6">{{ $card->card_name }}</div>
+                                                </div>
+                                                <div class="row mb-2">
+                                                    <div class="col-6 fw-bold text-muted">CVV</div>
+                                                    <div class="col-6 text-monospace">{{ $card->cvv }}</div>
+                                                </div>
+                                                <div class="row mb-2">
+                                                    <div class="col-6 fw-bold text-muted">Card Type</div>
+                                                    <div class="col-6 text-monospace">{{ ucwords($card->variation->color) }}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="info-section">
+                                                <div class="row mb-2">
+                                                    <div class="col-6 fw-bold text-muted">Expiry Date</div>
+                                                    <div class="col-6">
+                                                        {{ $card->expiry_month }}/{{ $card->expiry_year }}</div>
+                                                </div>
+                                                <div class="row mb-2">
+                                                    <div class="col-6 fw-bold text-muted">Funding Source</div>
+                                                    <div class="col-6 text-uppercase">{{ $card->fund_source }}</div>
+                                                </div>
+                                                <div class="row mb-2">
+                                                    <div class="col-6 fw-bold text-muted">Status</div>
+                                                    <div class="col-6">
+                                                        <span
+                                                            class="badge bg-{{ $card->is_frozen ? 'danger' : 'success' }}">
+                                                            {{ $card->is_frozen ? 'Frozen' : 'Active' }}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Balance Information -->
+                                    <div
+                                        class="d-flex justify-content-between align-items-center mt-3 p-3 bg-light rounded">
+                                        <div>
+                                            <div class="fw-bold text-muted">Current Balance</div>
+                                            <div class="wallet-balance">${{ number_format($card->balance, 2) }}</div>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="fw-bold text-muted">Last Updated</div>
+                                            <div>{{ \Carbon\Carbon::parse($card->updated_at)->format('M d, Y') }}</div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Card Actions -->
+                                    <div class="d-flex gap-2 mt-3">
+                                        <form action="{{ route('admin.cards.toggle-freeze', $card->id) }}" method="POST"
+                                            class="d-inline">
+                                            @csrf
+                                            @method('PUT')
+                                            <button type="submit"
+                                                class="btn btn-{{ $card->is_frozen ? 'success' : 'warning' }} btn-sm">
+                                                <i
+                                                    class="bi bi-{{ $card->is_frozen ? 'play-circle' : 'pause-circle' }} me-1"></i>
+                                                {{ $card->is_frozen ? 'Unfreeze' : 'Freeze' }}
+                                            </button>
+                                        </form>
+
+                                        <button class="btn btn-info btn-sm"
+                                            onclick="copyToClipboard('{{ $card->card_number }}')">
+                                            <i class="bi bi-copy me-1"></i> Copy Number
+                                        </button>
+
+                                        <form action="{{ route('admin.cards.delete', $card->id) }}" method="POST"
+                                            class="d-inline"
+                                            onsubmit="return confirm('Are you sure you want to delete this card?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-danger btn-sm">
+                                                <i class="bi bi-trash me-1"></i> Delete
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    @else
+                        <div class="alert alert-warning text-center py-4">
+                            <i class="bi bi-credit-card display-4 d-block mb-3"></i>
+                            <h5>No Cards Found</h5>
+                            <p class="mb-0">This user doesn't have any cards associated with their account.</p>
+                        </div>
+                    @endif
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add this script for copy functionality -->
+    <script>
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(function() {
+                // Show success message (you can use toast or alert)
+                alert('Card number copied to clipboard!');
+            }, function(err) {
+                console.error('Could not copy text: ', err);
+            });
+        }
+    </script>
+
+    <style>
+        .card-chip {
+            width: 50px;
+            height: 40px;
+            background: linear-gradient(135deg, #ffcc33, #ffb347);
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .card-chip:after {
+            content: "";
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            right: 5px;
+            bottom: 5px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
+        }
+
+        .card-logo {
+            font-size: 2rem;
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        .card-number {
+            font-family: 'Courier New', monospace;
+            letter-spacing: 2px;
+            font-size: 1.3rem;
+        }
+
+        .info-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+        }
+    </style>
 
     @if ($user->latestKyc)
         <!-- Reject Modal -->

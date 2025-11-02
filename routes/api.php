@@ -70,6 +70,7 @@ Route::prefix('v1')->group(function () {
 
         Route::get('/cards', [CardController::class, 'show']);
         Route::post('/cards', [CardController::class, 'store']);
+        Route::get('/cards/variations', [CardController::class, 'variations']);
         Route::put('/cards', [CardController::class, 'fundingSource']);
         Route::post('/cards/freeze', [CardController::class, 'freeze']);
         Route::post('/cards/unfreeze', [CardController::class, 'unfreeze']);

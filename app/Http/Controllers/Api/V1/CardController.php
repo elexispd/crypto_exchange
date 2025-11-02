@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Card;
+use App\Models\CardVariation;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -153,6 +154,17 @@ class CardController extends Controller
             'status' => true,
             'message' => 'Card fund source updated successfully',
             'data' => $card,
+        ], 200);
+    }
+
+
+    public function variations()
+    {
+        $variations = CardVariation::all();
+        return response()->json([
+            'status' => true,
+            'message' => 'Card variations retrieved successfully',
+            'data' => $variations,
         ], 200);
     }
 
