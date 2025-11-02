@@ -35,9 +35,9 @@ class CoinGeckoService
             'eth'    => 'Ethereum',
             'xrp'    => 'Ripple',
             'sol'    => 'Solana',
-            'gold'   => 'Tether-gold',     // example
-            'sp500'  => 'S-P-500',         // if you track synthetic assets, you may need another API
-            'nasdaq' => 'Nasdaq-100',      // same here
+            'gold'   => 'Tether-gold',
+            'sp500'  => 'S-P-500',
+            'nasdaq' => 'Nasdaq-100',
             'oil'    => 'Crude-oil',
         ];
     }
@@ -104,7 +104,7 @@ class CoinGeckoService
         });
     }
 
-    public function getSelectedMarketData(array $ids, string $currency = 'usd', int $ttl = 600)
+    public function getSelectedMarketData(array $ids, string $currency = 'usd', int $ttl = 43200)
     {
         $cacheKey = 'market_data_' . md5(implode(',', $ids) . $currency);
 
@@ -119,4 +119,6 @@ class CoinGeckoService
             return $response->json();
         });
     }
+
+
 }

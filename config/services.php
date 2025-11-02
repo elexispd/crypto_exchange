@@ -43,6 +43,13 @@ return [
     'emails' => [
         'support' => env('SUPPPORT_EMAIL', 'support@project87.com'),
         'no_reply' => env('NO_REPLY_EMAIL', 'no-reply@project87.com')
-    ]
+    ],
+
+    'coinmarketcap' => [
+        'base_url' => env('COINMARKETCAP_BASE_URL', 'https://pro-api.coinmarketcap.com/v1/'),
+        'api_key' => env('COINMARKETCAP_API_KEY'),
+    ],
+
+    'base_url' => env('BASE_URL', 'http://localhost:8000'),
 
 ];

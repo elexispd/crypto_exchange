@@ -15,6 +15,7 @@ use App\Http\Controllers\PortfolioController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\TransactionFeeController;
 use App\Http\Controllers\WithdrawController;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 
 
@@ -23,7 +24,11 @@ use Illuminate\Support\Facades\Mail;
 
 
 
-
+Route::get('/test-yahoo', function () {
+    $response = Http::withoutVerifying()->get('https://query1.finance.yahoo.com/v8/finance/chart/GC=F');
+    $data = $response->json();
+    dd($data['chart']['result'][0]['meta'] ?? 'missing');
+});
 
 Route::middleware(['web', 'auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');

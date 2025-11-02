@@ -14,7 +14,7 @@ use App\Http\Controllers\Api\V1\TransactionController;
 use App\Http\Controllers\Api\V1\WalletController;
 use App\Http\Controllers\Api\V1\WithdrawController;
 
-Route::get('/crypto/market', [CryptoApiController::class, 'market']);
+Route::get('/test', [CryptoApiController::class, 'market']);
 
 Route::prefix('v1')->group(function () {
     // Public

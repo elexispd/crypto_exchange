@@ -3,78 +3,126 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-
+use App\Models\Asset;
+use App\Models\Assets as ModelsAssets;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use App\Services\CoinGeckoService;
+use App\Services\YahooService;
 use App\Traits\Assets;
+use Illuminate\Support\Facades\Auth;
 
 class CryptoApiController extends Controller
 {
     use Assets;
 
     protected $coinGecko;
+    protected $yahoo;
 
 
-    public function __construct(CoinGeckoService $coinGecko)
+    public function __construct(CoinGeckoService $coinGecko, YahooService $yahooService)
     {
         $this->coinGecko = $coinGecko;
+        $this->yahoo = $yahooService;
     }
 
 
-    // Get multiple prices
+    /**
+     * Get combined prices from CoinGecko (crypto) and Yahoo (traditional assets)
+     */
     public function prices()
     {
-        $ids = ['bitcoin', 'ethereum', 'ripple', 'solana'];
-        $currencies = ['usd'];
+        // Get crypto assets from CoinGecko
+        $cryptoAssets = Asset::where('type', 'coin')->get();
+        $cryptoIds = $cryptoAssets->pluck('name')->toArray();
+        $cryptoPrices = $this->coinGecko->getPrices($cryptoIds, ['usd']);
 
-        $prices = $this->coinGecko->getPrices($ids, $currencies);
+        // Format crypto data
+        $formattedCrypto = [];
+        foreach ($cryptoAssets as $asset) {
+            $formattedCrypto[$asset->name] = [
+                'symbol' => $asset->symbol,
+                'price' => $cryptoPrices[$asset->name]['usd'] ?? null,
+                'type' => 'crypto',
+                'source' => 'coingecko'
+            ];
+        }
 
-        $formatted = [
-            'Bitcoin'  => ['symbol' => 'BTC', 'price' => $prices['bitcoin']['usd'] ?? null],
-            'Ethereum' => ['symbol' => 'ETH', 'price' => $prices['ethereum']['usd'] ?? null],
-            'Ripple'   => ['symbol' => 'XRP', 'price' => $prices['ripple']['usd'] ?? null],
-            'Solana'   => ['symbol' => 'SOL', 'price' => $prices['solana']['usd'] ?? null],
-        ];
+        // Get traditional assets from Yahoo
+        $traditionalAssets = Asset::where('type', '!=', 'coin')->get();
+        $assetSymbols = $traditionalAssets->pluck('symbol', 'name')->toArray();
+        $yahooPrices = $this->yahoo->getAll($assetSymbols);
+
+        // Format Yahoo data to match structure
+        $formattedTraditional = [];
+        foreach ($yahooPrices as $name => $data) {
+            $formattedTraditional[$name] = [
+                'symbol' => $data['symbol'],
+                'price' => $data['price'] ?? null,
+                // 'logo' => $this->getIcon($name),
+                'change_24h' => $data['change_percent'] ?? 0,
+                'source' => 'yahoo'
+            ];
+        }
+
+        // Combine both data sources
+        $combinedData = array_merge($formattedCrypto, $formattedTraditional);
 
         return response()->json([
-            'status'  => true,
+            'status' => true,
             'message' => 'Prices successfully retrieved',
-            'data'  => $formatted,
+            'data' => $combinedData
         ]);
     }
 
-    // Get individual price
+    /**
+     * Get individual price - automatically detects source
+     */
     public function price($id)
     {
-        $map = [
-            'bitcoin'  => 'BTC',
-            'ethereum' => 'ETH',
-            'ripple'   => 'XRP',
-            'solana'   => 'SOL',
-        ];
+        $asset = Asset::where('symbol', strtoupper($id))
+            ->orWhere('name', strtolower($id))
+            ->first();
 
-        $price = $this->coinGecko->getPrice($id, 'usd');
+        if (!$asset) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Asset not found',
+                'data' => null
+            ], 404);
+        }
+
+        // Determine data source based on asset type
+        if ($asset->type === 'coin') {
+            $priceData = $this->coinGecko->getPrice($asset->name, 'usd');
+            $price = $priceData[$asset->name]['usd'] ?? null;
+            $source = 'coingecko';
+        } else {
+            $priceData = $this->yahoo->getPrice($asset->symbol);
+            $price = $priceData['price'] ?? null;
+            $source = 'yahoo';
+        }
 
         return response()->json([
-            'status'  => true,
+            'status' => true,
             'message' => 'Price successfully retrieved',
-            'data'  => [
-                'name'   => ucfirst($id),
-                'symbol' => $map[$id] ?? strtoupper($id),
-                'price'  => $price[$id]['usd'] ?? null,
-            ],
+            'data' => [
+                'name' => $asset->name,
+                'symbol' => $asset->symbol,
+                'price' => $price,
+                'source' => $source
+            ]
         ]);
     }
-
 
     public function market()
     {
         // Cryptocurrency data
-        $cryptoIds = ['bitcoin', 'ethereum', 'ripple', 'solana'];
+        $cryptoIds = Asset::where('type', 'coin')->pluck('name')->toArray();
+
         $cryptoData = $this->coinGecko->getSelectedMarketData($cryptoIds, 'usd');
-        $wallet = auth()->user()->wallet;
+        $wallet = Auth::user()->wallet;
 
         $coins = collect($cryptoData)->mapWithKeys(function ($coin) use ($wallet) {
             $id = $coin['id'];
@@ -134,62 +182,74 @@ class CryptoApiController extends Controller
 
     private function getTraditionalAssets()
     {
-        $assets = [
-            'Nasdaq' => '^IXIC',
-            'S&P 500' => '^GSPC',
-            'Gold' => 'GC=F',
-            'Oil' => 'CL=F',
-            'Tesla' => 'TSLA',
-            'Apple' => 'AAPL',
-            'Amazon' => 'AMZN',
-            'AT&T' => 'T',
-            'Nvidia' => 'NVDA'
-        ];
+        $cacheKey = 'traditional_assets_data';
+        $cacheDuration = 43200; // 12 hours in seconds
 
-        $traditionalData = [];
+        return Cache::remember($cacheKey, $cacheDuration, function () {
+            $assets = [
+                'Nasdaq' => '^IXIC',
+                'S&P 500' => '^GSPC',
+                'Gold' => 'GC=F',
+                'Oil' => 'CL=F',
+                'Tesla' => 'TSLA',
+                'Apple' => 'AAPL',
+                'Amazon' => 'AMZN',
+                'AT&T' => 'T',
+                'Nvidia' => 'NVDA'
+            ];
 
-        foreach ($assets as $name => $symbol) {
-            try {
-                // Using Yahoo Finance unofficial API
-                $url = "https://query1.finance.yahoo.com/v8/finance/chart/{$symbol}";
-                $response = Http::get($url);
-                $data = $response->json();
+            $traditionalData = [];
 
-                if (isset($data['chart']['result'][0]['meta']['regularMarketPrice'])) {
-                    $price = $data['chart']['result'][0]['meta']['regularMarketPrice'];
-                    $previousClose = $data['chart']['result'][0]['meta']['previousClose'] ?? $price;
-                    $changePercent = (($price - $previousClose) / $previousClose) * 100;
+            foreach ($assets as $name => $symbol) {
+                try {
+                    // Using Yahoo Finance unofficial API
+                    $url = "https://query1.finance.yahoo.com/v8/finance/chart/{$symbol}";
+                    $response = Http::timeout(10)->get($url);
+                    $data = $response->json();
 
-                    $traditionalData[$name] = [
-                        'symbol' => $symbol,
-                        'icon' => $this->getAssetIcon($name),
-                        'price' => number_format($price, 2),
-                        'change_24h' => round($changePercent, 2),
-                        'balance' => '0.00', // Users don't hold these in wallet
-                        'usd_equiv' => '0.00',
-                    ];
+                    if (isset($data['chart']['result'][0]['meta']['regularMarketPrice'])) {
+                        $price = $data['chart']['result'][0]['meta']['regularMarketPrice'];
+                        $previousClose = $data['chart']['result'][0]['meta']['previousClose'] ?? $price;
+                        $changePercent = (($price - $previousClose) / $previousClose) * 100;
+
+                        $traditionalData[$name] = [
+                            'symbol' => $symbol,
+                            'icon' => $this->getIcon($name),
+                            'price' => number_format($price, 2),
+                            'change_24h' => round($changePercent, 2),
+                            'balance' => '0.00', // Users don't hold these in wallet
+                            'usd_equiv' => '0.00',
+                        ];
+                    } else {
+                        // If API returns data but no price, use mock data
+                        $traditionalData[$name] = $this->getMockTraditionalAsset($name, $symbol);
+                    }
+                } catch (\Exception $e) {
+                    // Fallback to mock data on any error
+                    return null;
                 }
-            } catch (\Exception $e) {
-                // Fallback to mock data
-                $traditionalData[$name] = $this->getMockTraditionalAsset($name, $symbol);
             }
-        }
 
-        return $traditionalData;
+            return $traditionalData;
+        });
     }
 
-    private function getAssetIcon($assetName)
+    private function getIcon($assetName)
     {
         $icons = [
-            'Nasdaq' => '/icons/nasdaq.png',
-            'S&P 500' => '/icons/sp500.png',
-            'Gold' => '/icons/gold.png',
-            'Oil' => '/icons/oil.png',
-            'Tesla' => '/icons/tesla.png',
-            'Apple' => '/icons/apple.png',
-            'Amazon' => '/icons/amazon.png',
-            'AT&T' => '/icons/att.png',
-            'Nvidia' => '/icons/nvidia.png',
+            'Bitcoin' => config('services.base_url') . '/assets/img/icons/btc.png',
+            'Ethereum' => config('services.base_url') . '/assets/img/icons/eth.png',
+            'Ripple' => config('services.base_url') . '/assets/img/icons/xrp.png',
+            'Solana' => config('services.base_url') . '/assets/img/icons/sol.png',
+            'Nasdaq' => config('services.base_url') . '/assets/img/icons/naz.png',
+            'S&p 500' => config('services.base_url') . '/assets/img/icons/sp.png',
+            'Gold' => config('services.base_url') . '/assets/img/icons/gold.png',
+            'Oil' => config('services.base_url') . '/assets/img/icons/oil.png',
+            'Tesla' => config('services.base_url') . '/assets/img/icons/tesla.png',
+            'Apple' => config('services.base_url') . '/assets/img/icons/apple.png',
+            'Amazon' => config('services.base_url') . '/assets/img/icons/amazon.png',
+            'AT&T' => config('services.base_url') . '/assets/img/icons/at.png',
+            'Nvidia' => config('services.base_url') . '/assets/img/icons/nvi.png',
         ];
 
         return $icons[$assetName] ?? '/icons/default.png';
@@ -213,7 +273,7 @@ class CryptoApiController extends Controller
 
         return [
             'symbol' => $symbol,
-            'icon' => $this->getAssetIcon($name),
+            'icon' => $this->getIcon($name),
             'price' => number_format($data['price'], 2),
             'change_24h' => $data['change'],
             'balance' => '0.00',
@@ -247,10 +307,21 @@ class CryptoApiController extends Controller
 
     public function allAssets()
     {
+        $assets = Asset::all();
+        $formatted = [];
+
+        foreach ($assets as $asset) {
+            $formatted[$asset->name] = [
+                'name' => $asset->name,
+                'symbol' => $asset->symbol,
+                'icon' => $this->getIcon(ucwords($asset->name)),
+                'type' => $asset->type,
+            ];
+        }
         return response()->json([
             'status'  => true,
             'message' => 'Assets successfully retrieved',
-            'data'  => $this->getAllAssets(),
+            'data'  => $formatted,
         ]);
     }
 }
