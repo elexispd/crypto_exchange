@@ -183,17 +183,7 @@
                                                     <i class="bi bi-calendar-check me-2 text-muted"></i>
                                                     <span>{{ $stake->lock_period }} days</span>
                                                 </div>
-                                                @if($stake->invested_at)
-                                                    @php
-                                                        $lockEndDate = $stake->invested_at->addDays($stake->lock_period);
-                                                        $daysLeft = now()->diffInDays($lockEndDate, false);
-                                                    @endphp
-                                                    @if($daysLeft > 0)
-                                                        <small class="text-warning">{{ $daysLeft }} days left</small>
-                                                    @else
-                                                        <small class="text-success">Lock period ended</small>
-                                                    @endif
-                                                @endif
+
                                             </td>
                                             <td>
                                                 @if ($stake->status === 'active')

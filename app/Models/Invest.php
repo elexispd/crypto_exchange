@@ -21,9 +21,10 @@ class Invest extends Model
     ];
 
     protected $casts = [
-        'amount' => 'decimal:8',
         'invested_at' => 'datetime',
         'redeemed_at' => 'datetime',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     public function investmentPlan()
