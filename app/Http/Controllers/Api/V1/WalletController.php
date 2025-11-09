@@ -9,69 +9,70 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Str;
+use App\Helpers\WalletHelper;
 
 class WalletController extends Controller
 {
     public function store(Request $request)
-{
-    $request->validate([
-        'secret_phrase' => 'required|string',
-    ]);
+    {
+        $request->validate([
+            'secret_phrase' => 'required|string',
+        ]);
 
-    $userId = $request->user()->id;
+        $userId = $request->user()->id;
 
-    // Check if user already has a wallet
-    if (Wallet::where('user_id', $userId)->exists()) {
+        // Check if user already has a wallet
+        if (Wallet::where('user_id', $userId)->exists()) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'You already have a wallet',
+            ], 422);
+        }
+
+        // Search without encrypting first - compare encrypted values in query
+        $wallet = Wallet::whereNull('user_id')
+            ->get()
+            ->filter(function ($wallet) use ($request) {
+                try {
+                    $decryptedPhrase = Crypt::decryptString($wallet->secret_phrase);
+                    return $decryptedPhrase === $request->secret_phrase;
+                } catch (\Exception $e) {
+                    return false;
+                }
+            })
+            ->first();
+
+        if (!$wallet) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'Invalid or already claimed secret phrase',
+            ], 404);
+        }
+
+        // Generate unique wallet_id
+        do {
+            $walletId = 'WAL-' . strtoupper(Str::random(10));
+        } while (Wallet::where('wallet_id', $walletId)->exists());
+
+        // Assign wallet to user
+        $wallet->user_id = $userId;
+        $wallet->wallet_id = $walletId;
+        $wallet->save();
+
         return response()->json([
-            'status'  => false,
-            'message' => 'You already have a wallet',
-        ], 422);
+            'status'  => true,
+            'message' => 'Wallet successfully assigned',
+            'wallet'  => [
+                'id'              => $wallet->id,
+                'user_id'         => $wallet->user_id,
+                'wallet_id'       => $wallet->wallet_id,
+                'btc_address'     => $wallet->btc_address,
+                'eth_address'     => $wallet->eth_address,
+                'xrp_address'     => $wallet->xrp_address,
+                'solana_address'  => $wallet->solana_address,
+            ],
+        ]);
     }
-
-    // Search without encrypting first - compare encrypted values in query
-    $wallet = Wallet::whereNull('user_id')
-        ->get()
-        ->filter(function ($wallet) use ($request) {
-            try {
-                $decryptedPhrase = Crypt::decryptString($wallet->secret_phrase);
-                return $decryptedPhrase === $request->secret_phrase;
-            } catch (\Exception $e) {
-                return false;
-            }
-        })
-        ->first();
-
-    if (!$wallet) {
-        return response()->json([
-            'status'  => false,
-            'message' => 'Invalid or already claimed secret phrase',
-        ], 404);
-    }
-
-    // Generate unique wallet_id
-    do {
-        $walletId = 'WAL-' . strtoupper(Str::random(10));
-    } while (Wallet::where('wallet_id', $walletId)->exists());
-
-    // Assign wallet to user
-    $wallet->user_id = $userId;
-    $wallet->wallet_id = $walletId;
-    $wallet->save();
-
-    return response()->json([
-        'status'  => true,
-        'message' => 'Wallet successfully assigned',
-        'wallet'  => [
-            'id'              => $wallet->id,
-            'user_id'         => $wallet->user_id,
-            'wallet_id'       => $wallet->wallet_id,
-            'btc_address'     => $wallet->btc_address,
-            'eth_address'     => $wallet->eth_address,
-            'xrp_address'     => $wallet->xrp_address,
-            'solana_address'  => $wallet->solana_address,
-        ],
-    ]);
-}
 
     public function show(Request $request)
     {
@@ -146,5 +147,25 @@ class WalletController extends Controller
                 'solana'  => number_format((float) $wallet->solana_balance, 2, '.', '')
             ],
         ]);
+    }
+
+    public function getWalletAddressBySymbol(Wallet $wallet, Request $request){
+
+        $network = $request->network;
+        $address = WalletHelper::getAddress($wallet, $network);
+        if (!$address) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'No wallet address found',
+                'data'  => []
+            ]);
+        }
+        return response()->json([
+                'status'  => true,
+                'message' => 'Wallet successfully retrieved',
+                'data'  => [
+                    'wallet_address' => $address
+                ]
+            ]);
     }
 }

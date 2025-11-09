@@ -30,10 +30,14 @@ class CardController extends Controller
 
         $user = Auth::user();
 
-        if (Card::where('user_id', $user->id)->exists()) {
+        // Check if user already has a card of the same type
+        if (Card::where('user_id', $user->id)
+            ->where('card_variation_id', $validated['card_type'])
+            ->exists()
+        ) {
             return response()->json([
                 'status' => false,
-                'message' => 'You already have an active card.',
+                'message' => 'You already have a card of this type.',
             ], 400);
         }
 

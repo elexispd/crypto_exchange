@@ -24,6 +24,10 @@ class WalletHelper
             'eth' => 'eth_address',
             'xrp' => 'xrp_address',
             'sol' => 'solana_address',
+            'bitcoin' => 'btc_address',
+            'etherium' => 'eth_address',
+            'ripple' => 'xrp_address',
+            'solana' => 'solana_address',
             'gold' => null,
             'sp500' => null,
             'nasdaq' => null,
@@ -35,7 +39,6 @@ class WalletHelper
         if (! isset($map[$currency]) || ! $map[$currency]) {
             return null;
         }
-
         return $wallet->{$map[$currency]} ?? null;
     }
 

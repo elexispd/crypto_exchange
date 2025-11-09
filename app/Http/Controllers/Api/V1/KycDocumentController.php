@@ -18,7 +18,7 @@ class KycDocumentController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $kycDocuments = $request->user()->kycDocument()->latest()->get();
+        $kycDocuments = $request->user()->kycDocuments()->latest()->get();
 
         return response()->json([
             'status' => true,

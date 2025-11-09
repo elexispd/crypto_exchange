@@ -43,6 +43,7 @@ Route::prefix('v1')->group(function () {
 
         Route::get('/wallet/getSecretPhrase', [WalletController::class,  'getPhrase']);
         Route::get('/wallet/getBalances', [WalletController::class,  'getBalances']);
+        Route::get('/wallet/{wallet}/{network}', [WalletController::class,  'getWalletAddressBySymbol']);
         Route::apiResource('wallet', WalletController::class)->only(['store', 'show']);
 
         Route::get('/crypto/prices', [CryptoApiController::class, 'prices']);
