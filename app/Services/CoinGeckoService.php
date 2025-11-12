@@ -14,31 +14,31 @@ class CoinGeckoService
     }
 
     protected $symbolMap = [
-        'btc'    => 'Bitcoin',
-        'eth'    => 'Ethereum',
-        'xrp'    => 'Ripple',
-        'sol'    => 'Solana',
-        'bitcoin' => 'Bitcoin',
-        'ethereum' => 'Ethereum',
-        'ripple' => 'Xrp',
-        'solana' => 'Sol',
-        'gold'   => 'Tether-gold',     // example
-        'sp500'  => 'S-P-500',         // if you track synthetic assets, you may need another API
-        'nasdaq' => 'Nasdaq-100',      // same here
-        'oil'    => 'Crude-oil',       // may not exist in CoinGecko
+        'btc'    => 'bitcoin',
+        'eth'    => 'ethereum',
+        'xrp'    => 'ripple',
+        'sol'    => 'solana',
+        'bitcoin' => 'bitcoin',
+        'ethereum' => 'ethereum',
+        'ripple' => 'ripple',
+        'solana' => 'solana',
+        'gold'   => 'tether-gold',
+        'sp500'  => 's-p-500',
+        'nasdaq' => 'nasdaq-100',
+        'oil'    => 'crude-oil',
     ];
 
     public function getCoinListSingle()
     {
         return [
-            'btc'    => 'Bitcoin',
-            'eth'    => 'Ethereum',
-            'xrp'    => 'Ripple',
-            'sol'    => 'Solana',
-            'gold'   => 'Tether-gold',
-            'sp500'  => 'S-P-500',
-            'nasdaq' => 'Nasdaq-100',
-            'oil'    => 'Crude-oil',
+            'btc'    => 'bitcoin',
+            'eth'    => 'ethereum',
+            'xrp'    => 'ripple',
+            'sol'    => 'solana',
+            'gold'   => 'tether-gold',
+            'sp500'  => 's-p-500',
+            'nasdaq' => 'nasdaq-100',
+            'oil'    => 'crude-oil',
         ];
     }
 
@@ -119,6 +119,4 @@ class CoinGeckoService
             return $response->json();
         });
     }
-
-
 }

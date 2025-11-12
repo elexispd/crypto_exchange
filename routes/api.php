@@ -13,6 +13,8 @@ use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\TransactionController;
 use App\Http\Controllers\Api\V1\WalletController;
 use App\Http\Controllers\Api\V1\WithdrawController;
+use App\Console\Commands\ClearOptimizationCommand;
+use Illuminate\Support\Facades\Artisan;
 
 Route::get('/test', [CryptoApiController::class, 'market']);
 
@@ -86,5 +88,41 @@ Route::prefix('v1')->group(function () {
         Route::get('/investment-plans/network/{network}', [InvestController::class, 'getInvestmentPlans']);
 
         Route::get('/portfolio/stakes/{invest_id}', [PortfolioController::class, 'portfolioTransactions']);
+    });
+
+    Route::post('/artisan/optimize-clear', function (Request $request) {
+        $token = $request->header('X-Artisan-Token');
+
+        if (!$token || $token !== config('app.artisan_token')) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        try {
+            // Execute via command
+            Artisan::call('app:clear-optimization', [
+                '--token' => $token
+            ]);
+
+            $output = Artisan::output();
+
+            logger()->info('Optimization cleared via API', [
+                'ip' => $request->ip(),
+                'output' => $output
+            ]);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Optimization cleared successfully',
+                'output' => $output
+            ]);
+        } catch (\Exception $e) {
+            logger()->error('Clear optimization failed: ' . $e->getMessage());
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Command failed',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     });
 });
