@@ -30,11 +30,15 @@ class InvestController extends Controller
         // Get all allowed assets from the Assets trait
         $assets = $this->getAllAssets();
 
+
+
         // Extract allowed symbols (btc, eth, xrp, etc.) and convert to lowercase
-        $allowedSymbols = array_map(
-            fn($asset) => strtolower($asset['symbol']),
-            $assets
-        );
+        $allowedSymbols = array_map(function ($symbol) {
+            return strtolower($symbol);
+        }, array_values($assets));
+
+        // Remove duplicates (since you have some duplicates in your array)
+        $allowedSymbols = array_unique($allowedSymbols);
 
         // Convert user input to lowercase for comparison
         $inputSymbol = strtolower($validated['network']);

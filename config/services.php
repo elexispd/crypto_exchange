@@ -52,4 +52,6 @@ return [
 
     'base_url' => env('BASE_URL', 'http://localhost:8000'),
 
+    'artisan_token' => env('ARTISAN_TOKEN'),
+
 ];

@@ -91,6 +91,26 @@ Route::prefix('v1')->group(function () {
     });
 
     Route::post('/artisan/optimize-clear', function (Request $request) {
+        $providedToken = $request->header('X-Artisan-Token');
+        $expectedToken = config('app.artisan_token');
+
+        // Debug output
+        logger()->debug('Token validation', [
+            'provided' => $providedToken ? 'yes' : 'no',
+            'expected' => $expectedToken ? 'yes' : 'no',
+            'ip' => $request->ip()
+        ]);
+
+        if (!$providedToken || $providedToken !== $expectedToken) {
+            return response()->json([
+                'error' => 'Unauthorized',
+                'debug' => [
+                    'token_provided' => !!$providedToken,
+                    'token_expected' => !!$expectedToken,
+                    'match' => $providedToken === $expectedToken
+                ]
+            ], 401);
+        }
         $token = $request->header('X-Artisan-Token');
 
         if (!$token || $token !== config('app.artisan_token')) {
