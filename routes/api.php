@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\V1\TransactionController;
 use App\Http\Controllers\Api\V1\WalletController;
 use App\Http\Controllers\Api\V1\WithdrawController;
 use App\Console\Commands\ClearOptimizationCommand;
+use App\Http\Controllers\v1\NotificationController;
 use Illuminate\Support\Facades\Artisan;
 
 Route::get('/test', [CryptoApiController::class, 'market']);
@@ -89,6 +90,17 @@ Route::prefix('v1')->group(function () {
         Route::get('/investment-plans/network/{network}', [InvestController::class, 'getInvestmentPlans']);
 
         Route::get('/portfolio/stakes/{invest_id}', [PortfolioController::class, 'portfolioTransactions']);
+
+        Route::prefix('notifications')->group(function () {
+            Route::get('/', [NotificationController::class, 'index']);
+            Route::get('/unread', [NotificationController::class, 'unread']);
+            Route::get('/stats', [NotificationController::class, 'stats']);
+            Route::put('/mark-all-read', [NotificationController::class, 'markAllAsRead']);
+            Route::put('/{id}/mark-read', [NotificationController::class, 'markAsRead']);
+            Route::delete('/{id}', [NotificationController::class, 'destroy']);
+            Route::delete('/', [NotificationController::class, 'clearAll']);
+        });
+
     });
 
     Route::post('/artisan/optimize-clear', function (Request $request) {
@@ -146,4 +158,6 @@ Route::prefix('v1')->group(function () {
             ], 500);
         }
     });
+
+
 });

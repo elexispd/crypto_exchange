@@ -64,15 +64,22 @@ class User extends Authenticatable
         return $this->hasOne(KycDocument::class)->latestOfMany();
     }
 
-    public function invests() {
+    public function invests()
+    {
         return $this->hasMany(Invest::class);
     }
-    public function wallet() {
+    public function wallet()
+    {
         return $this->hasOne(Wallet::class);
     }
 
-    public function card() {
+    public function card()
+    {
         return $this->hasMany(Card::class);
     }
 
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class);
+    }
 }
