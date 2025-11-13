@@ -10,6 +10,7 @@ use App\Http\Resources\KycDocumentResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use App\Services\NotificationService;
 
 class KycDocumentController extends Controller
 {
@@ -71,6 +72,9 @@ class KycDocumentController extends Controller
             'front_image' => $frontImagePath,
             'back_image' => $backImagePath,
         ]);
+
+        // Send KYC submitted notification
+        NotificationService::kycSubmitted($kycDocument);
 
         return response()->json([
             'status' => true,
@@ -156,8 +160,29 @@ class KycDocumentController extends Controller
             $data['back_image'] = 'kyc/documents/' . $backFilename;
         }
 
+        // Get the original status before update
+        $originalStatus = $kyc->status;
+        $rejectionReason = $request->input('rejection_reason');
+
         // Perform update
         $kyc->update($data);
+        
+        // Refresh the model to get the latest data
+        $kyc->refresh();
+
+        // Check if this is an admin updating the status
+        if ($request->user()->isAdmin()) {
+            // If status was changed to approved
+            if ($kyc->status === 'approved' && $originalStatus !== 'approved') {
+                $kyc->update(['verified_at' => now()]);
+                NotificationService::kycApproved($kyc);
+            }
+            // If status was changed to rejected
+            elseif ($kyc->status === 'rejected' && $originalStatus !== 'rejected' && $rejectionReason) {
+                $kyc->update(['rejection_reason' => $rejectionReason]);
+                NotificationService::kycRejected($kyc, $rejectionReason);
+            }
+        }
 
         return response()->json([
             'status'  => true,

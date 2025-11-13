@@ -14,7 +14,7 @@ use App\Http\Controllers\Api\V1\TransactionController;
 use App\Http\Controllers\Api\V1\WalletController;
 use App\Http\Controllers\Api\V1\WithdrawController;
 use App\Console\Commands\ClearOptimizationCommand;
-use App\Http\Controllers\v1\NotificationController;
+use App\Http\Controllers\Api\V1\NotificationController;
 use Illuminate\Support\Facades\Artisan;
 
 Route::get('/test', [CryptoApiController::class, 'market']);
@@ -95,6 +95,7 @@ Route::prefix('v1')->group(function () {
             Route::get('/', [NotificationController::class, 'index']);
             Route::get('/unread', [NotificationController::class, 'unread']);
             Route::get('/stats', [NotificationController::class, 'stats']);
+            Route::get('/{id}', [NotificationController::class, 'view']);
             Route::put('/mark-all-read', [NotificationController::class, 'markAllAsRead']);
             Route::put('/{id}/mark-read', [NotificationController::class, 'markAsRead']);
             Route::delete('/{id}', [NotificationController::class, 'destroy']);

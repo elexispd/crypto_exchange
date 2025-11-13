@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Transaction;
 use App\Models\Wallet;
 use App\Services\CoinGeckoService;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Mail\DepositMail;
@@ -105,6 +106,9 @@ class TransactionController extends Controller
         ]);
 
         Mail::to($user->email)->send(new DepositMail($user, $transaction));
+        
+        // Send in-app notification
+        NotificationService::depositCreated($transaction);
 
         return response()->json([
             'status' => true,
@@ -199,6 +203,25 @@ class TransactionController extends Controller
         ]);
 
         Mail::to($request->user()->email)->send(new SwapMail($request->user(), $transaction));
+        
+        // Send in-app notification for swap completion
+        NotificationService::swapCompleted($transaction);
+        
+        // Send balance update notifications
+        $wallet->refresh(); // Refresh to get updated balances
+        NotificationService::walletBalanceUpdated(
+            $wallet, 
+            strtoupper($request->from_currency), 
+            $totalDeductAmount, 
+            'debit'
+        );
+        
+        NotificationService::walletBalanceUpdated(
+            $wallet, 
+            strtoupper($request->to_currency), 
+            $toAmount, 
+            'credit'
+        );
 
         return response()->json([
             'status' => true,
@@ -300,6 +323,18 @@ class TransactionController extends Controller
             'amount'    => $request->amount,
             'status'    => 'pending',
         ]);
+        
+        // Send withdrawal requested notification
+        NotificationService::withdrawalRequested($transaction);
+        
+        // Update wallet balance and send notification
+        $wallet->decrementBalance($request->currency, $request->amount);
+        NotificationService::walletBalanceUpdated(
+            $wallet, 
+            strtoupper($request->currency), 
+            $request->amount, 
+            'debit'
+        );
 
         return response()->json([
             'status' => true,

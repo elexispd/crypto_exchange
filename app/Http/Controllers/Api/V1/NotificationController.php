@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\v1;
+namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -24,6 +24,32 @@ class NotificationController extends Controller
             'data' => [
                 'notifications' => $notifications,
                 'unread_count' => $user->notifications()->unread()->count()
+            ]
+        ]);
+    }
+
+     public function view(Request $request, $id)
+    {
+        $user = $request->user();
+
+        $notification = $user->notifications()->find($id);
+
+        if (!$notification) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Notification not found'
+            ], 404);
+        }
+
+        // Mark as read if not already read
+        if (!$notification->is_read) {
+            $notification->markAsRead();
+        }
+
+        return response()->json([
+            'status' => true,
+            'data' => [
+                'notification' => $notification
             ]
         ]);
     }
