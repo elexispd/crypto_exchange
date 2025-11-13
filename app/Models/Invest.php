@@ -25,6 +25,7 @@ class Invest extends Model
         'redeemed_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        'lock_period' => 'integer',
     ];
 
     public function investmentPlan()

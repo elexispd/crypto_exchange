@@ -54,6 +54,11 @@ class User extends Authenticatable
         return $this->hasMany(KycDocument::class);
     }
 
+    public function kycDocument()
+    {
+        return $this->hasMany(KycDocument::class);
+    }
+
     public function latestKyc()
     {
         return $this->hasOne(KycDocument::class)->latestOfMany();

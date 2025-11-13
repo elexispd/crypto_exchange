@@ -39,6 +39,7 @@ Route::prefix('v1')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
 
         Route::get('/profile', [ProfileController::class, 'show']);
+        Route::put('/profile', [ProfileController::class, 'update']);
 
         Route::apiResource('kyc', KycDocumentController::class)->only(['index', 'store', 'show']);
         Route::post('/kyc/{kyc}', [KycDocumentController::class, 'update'])->name('kyc.update');
