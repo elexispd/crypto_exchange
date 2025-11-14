@@ -180,6 +180,8 @@ class CryptoApiController extends Controller
         ]);
     }
 
+
+
     private function getTraditionalAssets()
     {
         $cacheKey = 'traditional_assets_data';
@@ -363,5 +365,115 @@ class CryptoApiController extends Controller
             'message' => 'Assets successfully retrieved',
             'data'  => $formatted,
         ]);
+    }
+
+    /**
+     * Get single market/asset portfolio info from CoinGecko or Yahoo
+     */
+    public function getSingleMarket($network)
+    {
+        try {
+            $user = Auth::user();
+            $wallet = $user->wallet;
+
+            // Get asset from database
+            $asset = Asset::where('name', strtolower($network))
+                ->orWhere('symbol', strtoupper($network))
+                ->first();
+
+            if (!$asset) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Asset not found',
+                    'data' => null
+                ], 404);
+            }
+
+            // Map balance field for crypto assets
+            $balanceFieldMap = [
+                'bitcoin' => 'btc_balance',
+                'ethereum' => 'eth_balance',
+                'ripple' => 'xrp_balance',
+                'solana' => 'sol_balance',
+            ];
+
+            $balanceField = $balanceFieldMap[$asset->name] ?? null;
+            $balance = $balanceField ? (float) ($wallet->{$balanceField} ?? 0) : 0;
+
+            // Get data from appropriate source based on asset type
+            if ($asset->type === 'coin') {
+                // Get from CoinGecko
+                $coinData = $this->coinGecko->getSelectedMarketData([$asset->name], 'usd');
+
+                if (empty($coinData)) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Coin data not found',
+                        'data' => null
+                    ], 404);
+                }
+
+                $data = $coinData[0];
+                $price = $data['current_price'];
+                $usdValue = $balance * $price;
+
+                $formattedData = [
+                    'name' => ucfirst($asset->name),
+                    'symbol' => strtoupper($data['symbol']),
+                    'icon' => $data['image'],
+                    'price' => number_format($price, 2),
+                    'change_24h' => round($data['price_change_percentage_24h'], 2),
+                    'balance' => number_format($balance, 8),
+                    'usd_equiv' => number_format($usdValue, 2),
+                    'market_cap' => number_format($data['market_cap'] ?? 0, 2),
+                    'volume_24h' => number_format($data['total_volume'] ?? 0, 2),
+                    'high_24h' => number_format($data['high_24h'] ?? 0, 2),
+                    'low_24h' => number_format($data['low_24h'] ?? 0, 2),
+                    'source' => 'coingecko',
+                    'type' => 'crypto'
+                ];
+            } else {
+                // Get from Yahoo - use asset symbol for Yahoo API
+                $yahooData = $this->yahoo->getPrice($asset->symbol);
+
+                if (!$yahooData) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Asset data not found',
+                        'data' => null
+                    ], 404);
+                }
+
+                $price = $yahooData['price'];
+                $usdValue = $balance * $price;
+
+                $formattedData = [
+                    'name' => ucfirst($asset->name),
+                    'symbol' => $asset->symbol,
+                    'icon' => $this->getIcon(ucfirst($asset->name)),
+                    'price' => number_format($price, 2),
+                    'change_24h' => round($yahooData['change_percent'], 2),
+                    'balance' => number_format($balance, 2),
+                    'usd_equiv' => number_format($usdValue, 2),
+                    'previous_close' => number_format($yahooData['previous_close'], 2),
+                    'currency' => $yahooData['currency'],
+                    'exchange' => $yahooData['exchange'],
+                    'source' => 'yahoo',
+                    'type' => 'traditional'
+                ];
+            }
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Market data successfully retrieved',
+                'data' => $formattedData
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to retrieve market data: ' . $e->getMessage(),
+                'data' => null
+            ], 500);
+        }
     }
 }

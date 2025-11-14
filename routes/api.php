@@ -57,6 +57,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/crypto/assets', [CryptoApiController::class, 'allAssets']);
         Route::get('/crypto/commodity-assets', [CryptoApiController::class, 'getCommodityAssets']);
         Route::get('/crypto/coin-assets', [CryptoApiController::class, 'getCoinAssets']);
+        Route::get('/crypto/market/{network}', [CryptoApiController::class, 'getSingleMarket']);
 
 
         Route::get('/transactions', [TransactionController::class, 'index']);
