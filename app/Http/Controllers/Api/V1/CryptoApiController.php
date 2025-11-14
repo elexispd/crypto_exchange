@@ -324,4 +324,44 @@ class CryptoApiController extends Controller
             'data'  => $formatted,
         ]);
     }
+
+    public function getCommodityAssets()
+    {
+        $assets = Asset::where('type', '!=', 'coin')->get();
+        $formatted = [];
+
+        foreach ($assets as $asset) {
+            $formatted[$asset->name] = [
+                'name' => $asset->name,
+                'symbol' => $asset->symbol,
+                'icon' => $this->getIcon(ucwords($asset->name)),
+                'type' => $asset->type,
+            ];
+        }
+        return response()->json([
+            'status'  => true,
+            'message' => 'Assets successfully retrieved',
+            'data'  => $formatted,
+        ]);
+    }
+
+    public function getCoinAssets()
+    {
+        $assets = Asset::where('type', 'coin')->get();
+        $formatted = [];
+
+        foreach ($assets as $asset) {
+            $formatted[$asset->name] = [
+                'name' => $asset->name,
+                'symbol' => $asset->symbol,
+                'icon' => $this->getIcon(ucwords($asset->name)),
+                'type' => $asset->type,
+            ];
+        }
+        return response()->json([
+            'status'  => true,
+            'message' => 'Assets successfully retrieved',
+            'data'  => $formatted,
+        ]);
+    }
 }
